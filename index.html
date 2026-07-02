@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vaccination eligibility checker — prototype</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead-inner">
+    <span class="brand">Vaccination eligibility checker</span>
+    <span class="tag">Prototype</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============ INTRO ============ -->
+  <section class="step active" id="step-intro">
+    <h1>Find out which NHS vaccinations you may be eligible for</h1>
+    <p class="hint">Answer a few questions about your age, health and circumstances. You'll get a list of vaccinations worth looking into, with a link to the NHS page for each one.</p>
+    <div class="card" style="margin-bottom:1.5rem">
+      <p style="font-size:.95rem"><strong>Before you start:</strong> this is a high-level prototype based on the NHS "vaccinations and when to have them" page. It is not medical advice and doesn't replace a conversation with your GP surgery.</p>
+    </div>
+    <button class="btn" onclick="go(1)">Start</button>
+  </section>
+
+  <!-- ============ Q1 AGE ============ -->
+  <section class="step" id="step-1">
+    <p class="progress">Question 1 of 6</p>
+    <div class="progress-bar"><span style="width:16%"></span></div>
+    <h2>How old are you?</h2>
+    <p class="hint">Several vaccinations are offered at set ages, so this drives most of the routine recommendations.</p>
+    <p class="error" id="err-age">Enter an age between 0 and 120</p>
+    <div class="field">
+      <label for="age">Age in years</label>
+      <input type="number" id="age" min="0" max="120" inputmode="numeric">
+    </div>
+    <div class="nav">
+      <button class="btn" onclick="validateAge()">Continue</button>
+      <button class="btn secondary" onclick="go(0)">Back</button>
+    </div>
+  </section>
+
+  <!-- ============ Q2 PREGNANCY ============ -->
+  <section class="step" id="step-2">
+    <p class="progress">Question 2 of 6</p>
+    <div class="progress-bar"><span style="width:33%"></span></div>
+    <h2>Are you pregnant?</h2>
+    <p class="hint">Three vaccinations are offered during pregnancy, timed to different stages.</p>
+    <div class="choices" role="radiogroup" aria-label="Are you pregnant">
+      <label class="choice"><input type="radio" name="pregnant" value="yes">Yes</label>
+      <label class="choice"><input type="radio" name="pregnant" value="no">No / not applicable</label>
+    </div>
+    <div class="field" id="weeks-field" style="display:none">
+      <label for="weeks">How many weeks pregnant are you?</label>
+      <input type="number" id="weeks" min="1" max="42" inputmode="numeric">
+    </div>
+    <p class="error" id="err-preg">Select an option (and enter weeks if pregnant)</p>
+    <div class="nav">
+      <button class="btn" onclick="validatePreg()">Continue</button>
+      <button class="btn secondary" onclick="go(1)">Back</button>
+    </div>
+  </section>
+
+  <!-- ============ Q3 IMMUNE ============ -->
+  <section class="step" id="step-3">
+    <p class="progress">Question 3 of 6</p>
+    <div class="progress-bar"><span style="width:50%"></span></div>
+    <h2>Do you have a weakened immune system?</h2>
+    <details class="explainer">
+      <summary>What does "weakened immune system" (immunosuppressed) mean?</summary>
+      <div class="body">
+        <p>Your immune system is your body's defence against infection. Being immunosuppressed means that defence is weaker than normal, so infections can hit you harder. It usually happens for one of two reasons:</p>
+        <ul>
+          <li><strong>A health condition</strong> — for example HIV, or some blood cancers like leukaemia or lymphoma</li>
+          <li><strong>A treatment</strong> — for example chemotherapy, radiotherapy, long-term high-dose steroids, biologic medicines for conditions like rheumatoid arthritis or Crohn's, or the anti-rejection drugs taken after an organ transplant</li>
+        </ul>
+        <p>If you're on regular medication and aren't sure whether it affects your immune system, that's a genuinely common question — pick "Not sure" and ask your GP or pharmacist.</p>
+      </div>
+    </details>
+    <div class="choices" role="radiogroup" aria-label="Weakened immune system">
+      <label class="choice"><input type="radio" name="immuno" value="yes">Yes</label>
+      <label class="choice"><input type="radio" name="immuno" value="no">No</label>
+      <label class="choice"><input type="radio" name="immuno" value="unsure">Not sure<small>We'll include the relevant vaccines flagged as "check with your GP"</small></label>
+    </div>
+    <p class="error" id="err-immuno">Select an option</p>
+    <div class="nav">
+      <button class="btn" onclick="validateRadio('immuno', 4)">Continue</button>
+      <button class="btn secondary" onclick="go(2)">Back</button>
+    </div>
+  </section>
+
+  <!-- ============ Q4 CONDITIONS ============ -->
+  <section class="step" id="step-4">
+    <p class="progress">Question 4 of 6</p>
+    <div class="progress-bar"><span style="width:66%"></span></div>
+    <h2>Do you have any of these long-term health conditions?</h2>
+    <p class="hint">Select all that apply. Some vaccines are offered on the NHS specifically because a condition puts you at higher risk.</p>
+    <div class="choices">
+      <label class="choice"><input type="checkbox" name="cond" value="spleen">Problems with your spleen<small>Including a removed spleen, or spleen damage from sickle cell disease or coeliac disease</small></label>
+      <label class="choice"><input type="checkbox" name="cond" value="cochlear">Cochlear implant</label>
+      <label class="choice"><input type="checkbox" name="cond" value="resp">Chronic respiratory or heart condition<small>For example severe asthma, COPD or heart failure</small></label>
+      <label class="choice"><input type="checkbox" name="cond" value="neuro">Chronic neurological condition<small>For example Parkinson's disease, or a learning disability</small></label>
+      <label class="choice"><input type="checkbox" name="cond" value="diabetes">Diabetes</label>
+      <label class="choice"><input type="checkbox" name="cond" value="kidney">Chronic kidney disease</label>
+      <label class="choice"><input type="checkbox" name="cond" value="liver">Chronic liver condition</label>
+      <label class="choice"><input type="checkbox" name="cond" value="haemo">Haemophilia</label>
+      <label class="choice"><input type="checkbox" name="cond" value="complement">Complement disorder<small>Or receiving complement inhibitor therapy, such as eculizumab</small></label>
+      <label class="choice"><input type="checkbox" name="cond" value="none" id="cond-none">None of these</label>
+    </div>
+    <div class="nav">
+      <button class="btn" onclick="go(5)">Continue</button>
+      <button class="btn secondary" onclick="go(3)">Back</button>
+    </div>
+  </section>
+
+  <!-- ============ Q5 CIRCUMSTANCES ============ -->
+  <section class="step" id="step-5">
+    <p class="progress">Question 5 of 6</p>
+    <div class="progress-bar"><span style="width:83%"></span></div>
+    <h2>Do any of these circumstances apply to you?</h2>
+    <p class="hint">Select all that apply.</p>
+    <div class="choices">
+      <label class="choice"><input type="checkbox" name="circ" value="uni">Starting university or college for the first time<small>And aged 24 or under</small></label>
+      <label class="choice"><input type="checkbox" name="circ" value="carehome">I live in a care home for older adults</label>
+      <label class="choice"><input type="checkbox" name="circ" value="none" id="circ-none">None of these</label>
+    </div>
+    <div class="nav">
+      <button class="btn" onclick="go(6)">Continue</button>
+      <button class="btn secondary" onclick="go(4)">Back</button>
+    </div>
+  </section>
+
+  <!-- ============ Q6 WORK ============ -->
+  <section class="step" id="step-6">
+    <p class="progress">Question 6 of 6</p>
+    <div class="progress-bar"><span style="width:100%"></span></div>
+    <h2>Does your work involve any of these?</h2>
+    <p class="hint">Some jobs come with a higher infection risk, so extra vaccinations are recommended or provided through your employer. Select all that apply.</p>
+    <div class="choices">
+      <label class="choice"><input type="checkbox" name="work" value="healthcare">Frontline health or social care<small>Direct contact with patients or people receiving care</small></label>
+      <label class="choice"><input type="checkbox" name="work" value="lab">Laboratory or pathology work<small>Handling blood, tissue or other clinical specimens</small></label>
+      <label class="choice"><input type="checkbox" name="work" value="contact">Prison, homelessness or asylum support services<small>Regular close contact in higher-risk settings</small></label>
+      <label class="choice"><input type="checkbox" name="work" value="none" id="work-none">None of these</label>
+    </div>
+    <div class="nav">
+      <button class="btn" onclick="showResults()">See my results</button>
+      <button class="btn secondary" onclick="go(5)">Back</button>
+    </div>
+  </section>
+
+  <!-- ============ RESULTS ============ -->
+  <section class="step" id="step-results">
+    <h1>Vaccinations worth looking into</h1>
+    <p class="hint" id="results-summary"></p>
+    <div id="results"></div>
+    <div class="disclaimer">
+      <p><strong>How this works:</strong> recommendations are derived from the NHS page <a href="https://www.nhs.uk/vaccinations/nhs-vaccinations-and-when-to-have-them/" target="_blank" rel="noopener">NHS vaccinations and when to have them</a>. Occupational recommendations are indicative only — eligibility for those sits with your employer's occupational health service, not this page. This prototype is not medical advice; speak to your GP surgery about anything listed here, and about catching up on any missed routine vaccinations (including MMR if you haven't had 2 doses).</p>
+    </div>
+    <div class="nav" style="margin-top:1.5rem">
+      <button class="btn secondary" onclick="restart()">Start again</button>
+    </div>
+  </section>
+
+</main>
+
+<script src="script.js"></script>
+</body>
+</html>
