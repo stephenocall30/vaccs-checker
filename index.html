@@ -1,172 +1,739 @@
 <!DOCTYPE html>
-<html lang="en-GB">
+<html lang="en">
 <head>
-<meta charset="UTF-8">
+<meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vaccination eligibility checker — prototype</title>
-<link rel="stylesheet" href="styles.css">
+<title>Check which NHS vaccinations you may be eligible for</title>
+<style>
+/* ============================================================
+   NHS.UK design system — hand-coded, self-contained
+   Tokens from service-manual.nhs.uk/design-system/styles/colour
+   ============================================================ */
+:root{
+  --nhsuk-blue:#005eb8;
+  --nhsuk-dark-blue:#003087;
+  --nhsuk-text:#212b32;
+  --nhsuk-secondary-text:#4c6272;
+  --nhsuk-link:#005eb8;
+  --nhsuk-link-hover:#7c2855;
+  --nhsuk-link-visited:#330072;
+  --nhsuk-link-active:#002f5c;
+  --nhsuk-focus:#ffeb3b;
+  --nhsuk-focus-text:#212b32;
+  --nhsuk-border:#d8dde0;
+  --nhsuk-input-border:#4c6272;
+  --nhsuk-error:#d5281b;
+  --nhsuk-green:#007f3b;
+  --nhsuk-green-shadow:#00401e;
+  --nhsuk-yellow:#ffeb3b;
+  --nhsuk-pale-yellow:#fff9c4;
+  --nhsuk-grey-5:#f0f4f5;
+  --nhsuk-white:#ffffff;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{font-size:16px}
+body{
+  margin:0;
+  background:var(--nhsuk-grey-5);
+  color:var(--nhsuk-text);
+  font-family:"Frutiger W01",Arial,Helvetica,sans-serif;
+  font-size:19px;
+  line-height:1.47;
+  -webkit-font-smoothing:antialiased;
+}
+@media(max-width:640px){body{font-size:16px}}
+
+/* Skip link */
+.nhsuk-skip-link{position:absolute;left:-9999px;padding:8px;background:var(--nhsuk-white)}
+.nhsuk-skip-link:focus{left:16px;top:16px;z-index:100;background:var(--nhsuk-focus);color:var(--nhsuk-focus-text);outline:4px solid transparent;box-shadow:0 -2px var(--nhsuk-focus),0 4px var(--nhsuk-focus-text)}
+
+/* Prototype banner */
+.proto-banner{background:var(--nhsuk-pale-yellow);border-bottom:1px solid var(--nhsuk-border);padding:8px 0;font-size:16px}
+.proto-banner strong{background:var(--nhsuk-text);color:var(--nhsuk-white);padding:2px 8px;margin-right:8px;font-size:14px;letter-spacing:1px;text-transform:uppercase}
+
+/* Header */
+.nhsuk-header{background:var(--nhsuk-blue);padding:20px 0}
+.nhsuk-header__inner{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.nhsuk-header__logo{display:flex;align-items:center;text-decoration:none}
+.nhsuk-header__logo svg{height:40px;width:100px;display:block}
+.nhsuk-header__logo:focus{outline:none}
+.nhsuk-header__logo:focus svg{box-shadow:0 0 0 4px var(--nhsuk-focus),0 8px 0 0 var(--nhsuk-focus-text)}
+.nhsuk-header__service-name{color:var(--nhsuk-white);font-size:22px;font-weight:600;text-decoration:none}
+
+/* Layout */
+.nhsuk-width-container{max-width:960px;margin:0 auto;padding:0 16px}
+@media(min-width:641px){.nhsuk-width-container{padding:0 32px}}
+.nhsuk-main-wrapper{padding-top:24px;padding-bottom:48px}
+@media(min-width:641px){.nhsuk-main-wrapper{padding-top:32px;padding-bottom:56px}}
+.nhsuk-grid-two-thirds{max-width:640px}
+
+/* Typography */
+h1{font-size:32px;line-height:1.2;font-weight:700;margin:0 0 24px}
+@media(min-width:641px){h1{font-size:40px;margin-bottom:32px}}
+h2{font-size:26px;line-height:1.25;font-weight:700;margin:0 0 16px}
+@media(min-width:641px){h2{font-size:32px}}
+h3{font-size:20px;font-weight:700;margin:0 0 8px}
+@media(min-width:641px){h3{font-size:24px}}
+p{margin:0 0 16px}
+ul{margin:0 0 16px;padding-left:20px}
+li{margin-bottom:8px}
+a{color:var(--nhsuk-link)}
+a:visited{color:var(--nhsuk-link-visited)}
+a:hover{color:var(--nhsuk-link-hover)}
+a:active{color:var(--nhsuk-link-active)}
+a:focus{background:var(--nhsuk-focus);color:var(--nhsuk-focus-text);outline:4px solid transparent;box-shadow:0 -2px var(--nhsuk-focus),0 4px var(--nhsuk-focus-text);text-decoration:none}
+.nhsuk-hint{color:var(--nhsuk-secondary-text);margin:0 0 24px}
+.nhsuk-caption{color:var(--nhsuk-secondary-text);font-size:22px;display:block;margin-bottom:8px}
+.nhsuk-body-s{font-size:16px}
+
+/* Back link */
+.nhsuk-back-link{display:inline-block;margin-bottom:24px;font-size:16px}
+.nhsuk-back-link a{color:var(--nhsuk-text);text-decoration:none;border-bottom:1px solid var(--nhsuk-text);padding-left:14px;position:relative;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font:inherit}
+.nhsuk-back-link a::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%) rotate(45deg);width:8px;height:8px;border-left:2px solid var(--nhsuk-text);border-bottom:2px solid var(--nhsuk-text)}
+.nhsuk-back-link a:hover{color:var(--nhsuk-link-hover);border-color:var(--nhsuk-link-hover)}
+.nhsuk-back-link a:focus{background:var(--nhsuk-focus);box-shadow:0 -2px var(--nhsuk-focus),0 4px var(--nhsuk-focus-text);outline:4px solid transparent;border-bottom:none}
+
+/* Fieldset / legend */
+fieldset{border:0;margin:0;padding:0}
+.nhsuk-fieldset__legend{margin-bottom:8px;padding:0}
+.nhsuk-fieldset__legend h1{margin-bottom:16px}
+
+/* Form groups + errors */
+.nhsuk-form-group{margin-bottom:32px}
+.nhsuk-form-group--error{border-left:4px solid var(--nhsuk-error);padding-left:16px}
+.nhsuk-error-message{color:var(--nhsuk-error);font-weight:700;display:block;margin-bottom:16px}
+.nhsuk-error-summary{border:4px solid var(--nhsuk-error);background:var(--nhsuk-white);padding:16px;margin-bottom:32px}
+.nhsuk-error-summary:focus{outline:4px solid var(--nhsuk-focus)}
+.nhsuk-error-summary h2{margin-bottom:8px;font-size:24px}
+.nhsuk-error-summary a{color:var(--nhsuk-error);font-weight:700}
+
+/* Radios */
+.nhsuk-radios__item{position:relative;display:block;min-height:44px;margin-bottom:12px;padding:0 0 0 52px;clear:left}
+.nhsuk-radios__input{position:absolute;left:-2px;top:-2px;width:48px;height:48px;margin:0;opacity:0;cursor:pointer;z-index:1}
+.nhsuk-radios__label{display:inline-block;padding:8px 12px 8px 0;cursor:pointer}
+.nhsuk-radios__label::before{content:"";position:absolute;left:0;top:2px;width:40px;height:40px;border:2px solid var(--nhsuk-input-border);border-radius:50%;background:var(--nhsuk-white)}
+.nhsuk-radios__label::after{content:"";position:absolute;left:10px;top:12px;width:20px;height:20px;background:var(--nhsuk-text);border-radius:50%;opacity:0}
+.nhsuk-radios__input:checked+.nhsuk-radios__label::after{opacity:1}
+.nhsuk-radios__input:focus+.nhsuk-radios__label::before{border-width:4px;box-shadow:0 0 0 4px var(--nhsuk-focus)}
+.nhsuk-radios__hint{display:block;color:var(--nhsuk-secondary-text);font-size:16px;padding-right:12px}
+
+/* Checkboxes */
+.nhsuk-checkboxes__item{position:relative;display:block;min-height:44px;margin-bottom:12px;padding:0 0 0 52px}
+.nhsuk-checkboxes__input{position:absolute;left:-2px;top:-2px;width:48px;height:48px;margin:0;opacity:0;cursor:pointer;z-index:1}
+.nhsuk-checkboxes__label{display:inline-block;padding:8px 12px 8px 0;cursor:pointer}
+.nhsuk-checkboxes__label::before{content:"";position:absolute;left:0;top:2px;width:40px;height:40px;border:2px solid var(--nhsuk-input-border);background:var(--nhsuk-white)}
+.nhsuk-checkboxes__label::after{content:"";position:absolute;left:9px;top:12px;width:18px;height:9px;border-left:4px solid var(--nhsuk-text);border-bottom:4px solid var(--nhsuk-text);transform:rotate(-45deg);opacity:0}
+.nhsuk-checkboxes__input:checked+.nhsuk-checkboxes__label::after{opacity:1}
+.nhsuk-checkboxes__input:focus+.nhsuk-checkboxes__label::before{border-width:4px;box-shadow:0 0 0 4px var(--nhsuk-focus)}
+.nhsuk-checkboxes__divider{margin-bottom:12px;color:var(--nhsuk-text)}
+
+/* Text input */
+.nhsuk-input{border:2px solid var(--nhsuk-input-border);border-radius:0;padding:8px;font:inherit;height:48px;background:var(--nhsuk-white);color:var(--nhsuk-text);appearance:none}
+.nhsuk-input:focus{outline:4px solid var(--nhsuk-focus);outline-offset:0;box-shadow:inset 0 0 0 2px}
+.nhsuk-input--error{border-color:var(--nhsuk-error)}
+.nhsuk-input--width-4{max-width:6em}
+.nhsuk-label{display:block;margin-bottom:8px}
+
+/* Button */
+.nhsuk-button{background:var(--nhsuk-green);border:2px solid transparent;border-radius:4px;box-shadow:0 4px 0 var(--nhsuk-green-shadow);color:var(--nhsuk-white);cursor:pointer;font:inherit;font-weight:600;margin:0 0 28px;padding:12px 24px;text-align:center;display:inline-block;text-decoration:none;-webkit-appearance:none}
+.nhsuk-button:hover{background:#00662f}
+.nhsuk-button:focus{background:var(--nhsuk-focus);box-shadow:0 4px 0 var(--nhsuk-focus-text);color:var(--nhsuk-focus-text);outline:4px solid transparent}
+.nhsuk-button:active{background:#00401e;box-shadow:none;top:4px;position:relative}
+.nhsuk-button--secondary{background:var(--nhsuk-white);border:2px solid var(--nhsuk-blue);color:var(--nhsuk-blue);box-shadow:0 4px 0 var(--nhsuk-dark-blue)}
+.nhsuk-button--secondary:hover{background:#e8edee}
+
+/* Details ("expander" style) */
+.nhsuk-details{margin-bottom:32px;font-size:inherit}
+.nhsuk-details summary{color:var(--nhsuk-link);cursor:pointer;text-decoration:underline;display:inline-block;padding-left:24px;position:relative;list-style:none}
+.nhsuk-details summary::-webkit-details-marker{display:none}
+.nhsuk-details summary::before{content:"";position:absolute;left:2px;top:6px;border-style:solid;border-width:7px 0 7px 12px;border-color:transparent transparent transparent var(--nhsuk-link)}
+.nhsuk-details[open] summary::before{transform:rotate(90deg);top:8px}
+.nhsuk-details summary:hover{color:var(--nhsuk-link-hover)}
+.nhsuk-details summary:hover::before{border-left-color:var(--nhsuk-link-hover)}
+.nhsuk-details summary:focus{background:var(--nhsuk-focus);color:var(--nhsuk-focus-text);box-shadow:0 -2px var(--nhsuk-focus),0 4px var(--nhsuk-focus-text);outline:4px solid transparent;text-decoration:none}
+.nhsuk-details__text{border-left:4px solid var(--nhsuk-border);margin-top:8px;padding:16px;padding-bottom:1px}
+
+/* Inset text */
+.nhsuk-inset-text{border-left:8px solid var(--nhsuk-blue);background:var(--nhsuk-white);padding:24px;margin:0 0 32px}
+.nhsuk-inset-text p:last-child{margin-bottom:0}
+
+/* Warning callout */
+.nhsuk-warning-callout{margin-bottom:32px;background:var(--nhsuk-pale-yellow);border:1px solid var(--nhsuk-yellow)}
+.nhsuk-warning-callout__label{background:var(--nhsuk-yellow);color:var(--nhsuk-text);display:block;padding:8px 24px;margin:0;font-size:22px}
+.nhsuk-warning-callout__content{padding:24px;padding-bottom:8px}
+
+/* Care card (non-urgent) */
+.nhsuk-care-card{margin-bottom:32px}
+.nhsuk-care-card__heading{background:var(--nhsuk-blue);color:var(--nhsuk-white);margin:0;padding:16px 24px;font-size:22px;position:relative}
+.nhsuk-care-card__content{background:var(--nhsuk-white);border:1px solid var(--nhsuk-blue);border-top:0;padding:24px;padding-bottom:8px}
+.nhsuk-care-card__content a{color:var(--nhsuk-link)}
+
+/* Result cards */
+.nhsuk-card{background:var(--nhsuk-white);border:1px solid var(--nhsuk-border);margin-bottom:24px}
+.nhsuk-card__content{padding:24px;padding-bottom:8px}
+.nhsuk-card h3 a{font-size:inherit}
+.nhsuk-tag{display:inline-block;background:#d9e7f4;color:var(--nhsuk-dark-blue);border:1px solid var(--nhsuk-dark-blue);padding:2px 8px;font-size:16px;font-weight:600;margin-bottom:12px}
+.nhsuk-tag--green{background:#dcefe4;color:#00401e;border-color:#00401e}
+
+/* Summary list (check your answers) */
+.nhsuk-summary-list{width:100%;border-collapse:collapse;margin-bottom:32px}
+.nhsuk-summary-list__row{border-bottom:1px solid var(--nhsuk-border)}
+.nhsuk-summary-list__key{font-weight:700;width:45%;padding:12px 16px 12px 0;vertical-align:top;text-align:left}
+.nhsuk-summary-list__value{padding:12px 16px 12px 0;vertical-align:top}
+.nhsuk-summary-list__actions{padding:12px 0;vertical-align:top;text-align:right;white-space:nowrap}
+.nhsuk-summary-list__actions a{cursor:pointer}
+
+/* Footer */
+.nhsuk-footer{border-top:4px solid var(--nhsuk-blue);background:var(--nhsuk-grey-5);padding:24px 0;margin-top:16px;font-size:16px;color:var(--nhsuk-secondary-text)}
+.nhsuk-footer p{margin-bottom:8px}
+
+.nhsuk-u-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;margin:0!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;border:0!important;white-space:nowrap!important}
+[tabindex="-1"]:focus{outline:none}
+</style>
 </head>
 <body>
+<a class="nhsuk-skip-link" href="#maincontent">Skip to main content</a>
 
-<header class="masthead">
-  <div class="masthead-inner">
-    <span class="brand">Vaccinations eligibility checker</span>
-    <span class="tag">Concept</span>
+<div class="proto-banner">
+  <div class="nhsuk-width-container"><strong>Prototype</strong>This is a design prototype, not an NHS service. It does not give medical advice.</div>
+</div>
+
+<header class="nhsuk-header" role="banner">
+  <div class="nhsuk-width-container nhsuk-header__inner">
+    <a class="nhsuk-header__logo" href="#" onclick="return App.restart()" aria-label="NHS homepage">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 16" role="img" aria-hidden="true" focusable="false">
+        <path fill="#fff" d="M0 0h40v16H0z"></path>
+        <path fill="#005eb8" d="M3.9 1.5h4.4l2.6 9h.1l1.8-9h3.3l-2.8 13H9l-2.7-9h-.1l-1.8 9H1.1M17.3 1.5h3.6l-1 4.9h4L25 1.5h3.5l-2.7 13h-3.5l1.1-5.6h-4.1l-1.2 5.6h-3.4M37.7 4.4c-.7-.3-1.6-.6-2.9-.6-1.4 0-2.5.2-2.5 1.3 0 1.8 5.1 1.2 5.1 5.1 0 3.6-3.3 4.5-6.4 4.5-1.3 0-2.9-.3-4-.7l.8-2.7c.7.4 2.1.7 3.2.7s2.8-.2 2.8-1.5c0-2.1-5.1-1.3-5.1-5 0-3.4 2.9-4.4 5.8-4.4 1.6 0 3.1.2 4 .6"></path>
+      </svg>
+    </a>
+    <span class="nhsuk-header__service-name">Vaccination eligibility checker</span>
   </div>
 </header>
 
-<main>
+<div class="nhsuk-width-container">
+  <main class="nhsuk-main-wrapper" id="maincontent" role="main">
+    <div class="nhsuk-grid-two-thirds" id="app"></div>
+  </main>
+</div>
 
-  <!-- ============ INTRO ============ -->
-  <section class="step active" id="step-intro">
-    <h1>Find out which NHS vaccinations you may be eligible for</h1>
-    <p class="hint">Answer a few questions about your age, health and circumstances. You'll get a list of vaccinations worth looking into, with a link to the NHS page for each one.</p>
-    <div class="card" style="margin-bottom:1.5rem">
-      <p style="font-size:.95rem"><strong>Before you start:</strong> this is a high-level prototype based on the NHS "vaccinations and when to have them" page. It is not medical advice and doesn't replace a conversation with your GP surgery.</p>
-    </div>
-    <button class="btn" onclick="go(1)">Start</button>
-  </section>
+<footer class="nhsuk-footer" role="contentinfo">
+  <div class="nhsuk-width-container">
+    <p>Based on <a href="https://www.nhs.uk/vaccinations/nhs-vaccinations-and-when-to-have-them/" target="_blank" rel="noopener">NHS vaccinations and when to have them (nhs.uk)</a>, checked July 2026.</p>
+    <p>Design prototype built with the <a href="https://service-manual.nhs.uk/design-system" target="_blank" rel="noopener">NHS.UK design system</a>. Always speak to a GP, pharmacist or midwife about which vaccinations you need.</p>
+  </div>
+</footer>
 
-  <!-- ============ Q1 AGE ============ -->
-  <section class="step" id="step-1">
-    <p class="progress">Question 1 of 6</p>
-    <div class="progress-bar"><span style="width:16%"></span></div>
-    <h2>How old are you?</h2>
-    <p class="hint">Several vaccinations are offered at set ages, so this drives most of the routine recommendations.</p>
-    <p class="error" id="err-age">Enter an age between 0 and 120</p>
-    <div class="field">
-      <label for="age">Age in years</label>
-      <input type="number" id="age" min="0" max="120" inputmode="numeric">
-    </div>
-    <div class="nav">
-      <button class="btn" onclick="validateAge()">Continue</button>
-      <button class="btn secondary" onclick="go(0)">Back</button>
-    </div>
-  </section>
+<script>
+"use strict";
+/* =========================================================
+   Content: vaccine catalogue (links to nhs.uk)
+   ========================================================= */
+const V = {
+  flu:      {name:"Flu vaccine", url:"https://www.nhs.uk/vaccinations/flu-vaccine/", when:"Every year, usually from October"},
+  pneumo:   {name:"Pneumococcal vaccine", url:"https://www.nhs.uk/vaccinations/pneumococcal-vaccine/", when:"Usually a one-off dose"},
+  shingles: {name:"Shingles vaccine", url:"https://www.nhs.uk/vaccinations/shingles-vaccine/", when:"2 doses"},
+  rsv:      {name:"RSV vaccine", url:"https://www.nhs.uk/vaccinations/rsv-vaccine/", when:"One-off dose"},
+  covid:    {name:"COVID-19 vaccine", url:"https://www.nhs.uk/vaccinations/covid-19-vaccine/", when:"Usually offered in spring and winter"},
+  fluPreg:  {name:"Flu vaccine (in pregnancy)", url:"https://www.nhs.uk/pregnancy/keeping-well/flu-jab/", when:"During flu season, at any stage of pregnancy"},
+  wcough:   {name:"Whooping cough (pertussis) vaccine", url:"https://www.nhs.uk/pregnancy/keeping-well/whooping-cough-vaccination/", when:"From around 20 weeks of pregnancy"},
+  rsvPreg:  {name:"RSV vaccine (in pregnancy)", url:"https://www.nhs.uk/vaccinations/rsv-vaccine/", when:"From 28 weeks of pregnancy"},
+  menacwy:  {name:"MenACWY vaccine", url:"https://www.nhs.uk/vaccinations/menacwy-vaccine/", when:"One-off dose — available from your GP until your 25th birthday"},
+  menb:     {name:"MenB vaccine", url:"https://www.nhs.uk/vaccinations/menb-vaccine-for-children/", when:"From 20 July 2026 for new students aged 24 or under"},
+  mmr:      {name:"MMR vaccine", url:"https://www.nhs.uk/vaccinations/mmr-vaccine/", when:"2 doses — catch up at any age if you missed them"},
+  hpv:      {name:"HPV vaccine", url:"https://www.nhs.uk/vaccinations/hpv-vaccine/", when:"Catch-up available if you missed it at school"},
+  hepb:     {name:"Hepatitis B vaccine", url:"https://www.nhs.uk/vaccinations/hepatitis-b-vaccine/", when:"Course of doses"},
+  hepa:     {name:"Hepatitis A vaccine", url:"https://www.nhs.uk/conditions/hepatitis-a/", when:"Course of doses"},
+  bcg:      {name:"BCG tuberculosis (TB) vaccine", url:"https://www.nhs.uk/vaccinations/bcg-vaccine-for-tuberculosis-tb/", when:"Usually given at around 4 weeks old"},
+  sixin1:   {name:"6-in-1 vaccine", url:"https://www.nhs.uk/vaccinations/6-in-1-vaccine/", when:"At 8, 12 and 16 weeks (4th dose at 18 months for babies born on or after 1 July 2024)"},
+  rota:     {name:"Rotavirus vaccine", url:"https://www.nhs.uk/vaccinations/rotavirus-vaccine/", when:"At 8 and 12 weeks"},
+  mmrv:     {name:"MMRV vaccine", url:"https://www.nhs.uk/vaccinations/mmrv-vaccine/", when:"From 1 year old — doses depend on date of birth"},
+  fourin1:  {name:"4-in-1 pre-school booster", url:"https://www.nhs.uk/vaccinations/4-in-1-preschool-booster-vaccine/", when:"At 3 years 4 months"},
+  childflu: {name:"Children's flu vaccine", url:"https://www.nhs.uk/vaccinations/child-flu-vaccine/", when:"Every year from age 2 until the end of Year 11"},
+  tdipv:    {name:"Td/IPV vaccine (3-in-1 teenage booster)", url:"https://www.nhs.uk/vaccinations/td-ipv-vaccine-3-in-1-teenage-booster/", when:"At 14 (school Year 9)"},
+  hpvTeen:  {name:"HPV vaccine", url:"https://www.nhs.uk/vaccinations/hpv-vaccine/", when:"At 12 to 13 (school Year 8)"},
+  menacwyTeen:{name:"MenACWY vaccine", url:"https://www.nhs.uk/vaccinations/menacwy-vaccine/", when:"At 14 (school Year 9)"},
+  pneumoBaby:{name:"Pneumococcal vaccine", url:"https://www.nhs.uk/vaccinations/pneumococcal-vaccine/", when:"At 16 weeks and 1 year"},
+  menbBaby: {name:"MenB vaccine", url:"https://www.nhs.uk/vaccinations/menb-vaccine-for-children/", when:"At 8 weeks, 12 weeks and 1 year"}
+};
 
-  <!-- ============ Q2 PREGNANCY ============ -->
-  <section class="step" id="step-2">
-    <p class="progress">Question 2 of 6</p>
-    <div class="progress-bar"><span style="width:33%"></span></div>
-    <h2>Are you pregnant?</h2>
-    <p class="hint">Three vaccinations are offered during pregnancy, timed to different stages.</p>
-    <div class="choices" role="radiogroup" aria-label="Are you pregnant">
-      <label class="choice"><input type="radio" name="pregnant" value="yes">Yes</label>
-      <label class="choice"><input type="radio" name="pregnant" value="no">No / not applicable</label>
-    </div>
-    <div class="field" id="weeks-field" style="display:none">
-      <label for="weeks">How many weeks pregnant are you?</label>
-      <input type="number" id="weeks" min="1" max="42" inputmode="numeric">
-    </div>
-    <p class="error" id="err-preg">Select an option (and enter weeks if pregnant)</p>
-    <div class="nav">
-      <button class="btn" onclick="validatePreg()">Continue</button>
-      <button class="btn secondary" onclick="go(1)">Back</button>
-    </div>
-  </section>
+const CONDITION_OPTS = [
+  {value:"spleen", label:"Problems with the spleen", hint:"For example caused by sickle cell disease or coeliac disease"},
+  {value:"cochlear", label:"Cochlear implants"},
+  {value:"respheart", label:"A chronic respiratory or heart condition", hint:"For example severe asthma or heart failure"},
+  {value:"neuro", label:"A chronic neurological condition", hint:"For example Parkinson's disease or a learning disability"},
+  {value:"diabetes", label:"Diabetes"},
+  {value:"kidney", label:"Chronic kidney disease"},
+  {value:"liver", label:"A chronic liver condition"},
+  {value:"haemophilia", label:"Haemophilia"},
+  {value:"complement", label:"A complement disorder", hint:"Or receiving complement inhibitor therapy"},
+  {value:"carehome", label:"I live in a care home for older adults"}
+];
 
-  <!-- ============ Q3 IMMUNE ============ -->
-  <section class="step" id="step-3">
-    <p class="progress">Question 3 of 6</p>
-    <div class="progress-bar"><span style="width:50%"></span></div>
-    <h2>Do you have a weakened immune system?</h2>
-    <details class="explainer">
-      <summary>What does "weakened immune system" (immunosuppressed) mean?</summary>
-      <div class="body">
-        <p>Your immune system is your body's defence against infection. Being immunosuppressed means that defence is weaker than normal, so infections can hit you harder. It usually happens for one of two reasons:</p>
-        <ul>
-          <li><strong>A health condition</strong> — for example HIV, or some blood cancers like leukaemia or lymphoma</li>
-          <li><strong>A treatment</strong> — for example chemotherapy, radiotherapy, long-term high-dose steroids, biologic medicines for conditions like rheumatoid arthritis or Crohn's, or the anti-rejection drugs taken after an organ transplant</li>
-        </ul>
-        <p>If you're on regular medication and aren't sure whether it affects your immune system, that's a genuinely common question — pick "Not sure" and ask your GP or pharmacist.</p>
+const CONDITION_RULES = {
+  spleen:     {vaccines:["menacwy","menb","pneumo","flu"], reason:"you have problems with your spleen"},
+  cochlear:   {vaccines:["pneumo"], reason:"you have cochlear implants"},
+  respheart:  {vaccines:["pneumo","flu"], reason:"you have a chronic respiratory or heart condition"},
+  neuro:      {vaccines:["pneumo","flu"], reason:"you have a chronic neurological condition"},
+  diabetes:   {vaccines:["pneumo","flu"], reason:"you have diabetes"},
+  kidney:     {vaccines:["pneumo","flu","hepb"], reason:"you have chronic kidney disease"},
+  liver:      {vaccines:["pneumo","flu","hepa","hepb"], reason:"you have a chronic liver condition"},
+  haemophilia:{vaccines:["hepa","hepb"], reason:"you have haemophilia"},
+  complement: {vaccines:["menacwy","menb","pneumo","flu"], reason:"you have a complement disorder or receive complement inhibitor therapy"},
+  carehome:   {vaccines:["covid","flu"], reason:"you live in a care home for older adults"}
+};
+
+/* =========================================================
+   Screens (one question per page)
+   ========================================================= */
+const SCREENS = {
+  who: {
+    type:"radios", legend:"Who do you want to check vaccinations for?",
+    name:"who", error:"Select who you want to check vaccinations for",
+    options:[
+      {value:"self", label:"Myself"},
+      {value:"child", label:"A child under 16", hint:"Check their routine childhood vaccination schedule"}
+    ],
+    next: a => a.who === "child" ? "childAge" : "age"
+  },
+  age: {
+    type:"number", legend:"How old are you?",
+    name:"age", label:"Age in years", suffix:"years",
+    hint:"Your age decides which routine NHS vaccinations you're offered.",
+    min:16, max:120,
+    errors:{empty:"Enter your age", range:"Enter an age between 16 and 120"},
+    next: () => "pregnancy"
+  },
+  pregnancy: {
+    type:"radios", legend:"Are you pregnant?",
+    name:"pregnancy", error:"Select yes if you are pregnant",
+    hint:"Select 'No' if this does not apply to you.",
+    options:[{value:"yes", label:"Yes"},{value:"no", label:"No"}],
+    next: a => a.pregnancy === "yes" ? "weeks" : "immuno"
+  },
+  weeks: {
+    type:"number", legend:"How many weeks pregnant are you?",
+    name:"weeks", label:"Weeks", suffix:"weeks",
+    hint:"An estimate is fine. Some vaccines in pregnancy are offered from a certain week.",
+    min:1, max:42,
+    errors:{empty:"Enter how many weeks pregnant you are", range:"Enter a number of weeks between 1 and 42"},
+    next: () => "immuno"
+  },
+  immuno: {
+    type:"radios", legend:"Do you have a weakened immune system?",
+    name:"immuno", error:"Select yes, no or not sure",
+    details:{
+      summary:"What does having a weakened immune system (immunosuppressed) mean?",
+      html:"<p>Being immunosuppressed means your body's defence against infection is weaker than normal, so infections can affect you more seriously. It can be caused by:</p><ul><li><strong>a health condition</strong> — such as HIV, some blood cancers like leukaemia or lymphoma, or having your spleen removed</li><li><strong>a treatment</strong> — such as chemotherapy or radiotherapy, long-term steroid tablets, biologic medicines (for example for rheumatoid arthritis or Crohn's disease), or medicines taken after an organ transplant</li></ul><p>If you're not sure, choose 'Not sure' — your GP surgery can tell you.</p>"
+    },
+    options:[
+      {value:"yes", label:"Yes"},
+      {value:"no", label:"No"},
+      {value:"notsure", label:"Not sure"}
+    ],
+    next: () => "conditions"
+  },
+  conditions: {
+    type:"checkboxes", legend:"Do any of these apply to you?",
+    name:"conditions", error:"Select the conditions that apply to you, or select 'No, none of these'",
+    hint:"Some vaccines are offered on the NHS to people who need extra protection. Select all that apply.",
+    options: CONDITION_OPTS,
+    noneOption:{value:"none", label:"No, none of these"},
+    next: () => "work"
+  },
+  work: {
+    type:"checkboxes", legend:"Does your work involve any of these?",
+    name:"work", error:"Select the types of work that apply to you, or select 'No, none of these'",
+    hint:"Some vaccinations are recommended for certain jobs. These are usually arranged through your employer's occupational health service. Select all that apply.",
+    options:[
+      {value:"frontline", label:"Frontline health care", hint:"For example NHS staff with patient contact"},
+      {value:"socialcare", label:"Social care or care home work", hint:"Direct contact with people you care for"},
+      {value:"lab", label:"Laboratory work handling infectious samples"}
+    ],
+    noneOption:{value:"none", label:"No, none of these"},
+    next: a => (Number(a.age) <= 24 ? "student" : "check")
+  },
+  student: {
+    type:"radios", legend:"Are you starting university or college for the first time?",
+    name:"student", error:"Select yes if you are starting university or college for the first time",
+    hint:"Outbreaks of meningitis, mumps and measles are more common at universities and colleges.",
+    options:[{value:"yes", label:"Yes"},{value:"no", label:"No"}],
+    next: () => "check"
+  },
+  childAge: {
+    type:"radios", legend:"How old is the child?",
+    name:"childAge", error:"Select the child's age",
+    options:[
+      {value:"baby", label:"Under 1 year"},
+      {value:"toddler", label:"1 to 3 years"},
+      {value:"primary", label:"4 to 11 years"},
+      {value:"yr8", label:"12 to 13 years"},
+      {value:"teen", label:"14 to 15 years"}
+    ],
+    next: () => "childRisk"
+  },
+  childRisk: {
+    type:"checkboxes", legend:"Do any of these apply to the child?",
+    name:"childRisk", error:"Select what applies to the child, or select 'No, none of these'",
+    hint:"Some children need extra protection. Select all that apply.",
+    options:[
+      {value:"condition", label:"They have a long-term health condition", hint:"For example asthma needing regular treatment, diabetes or a heart condition"},
+      {value:"immuno", label:"They have a weakened immune system", hint:"Caused by a health condition or treatment such as chemotherapy"},
+      {value:"hepbmum", label:"Their mother has hepatitis B", hint:"Applies to babies"},
+      {value:"tb", label:"They live in an area with high rates of TB, or have a parent or grandparent born in a country with many TB cases"}
+    ],
+    noneOption:{value:"none", label:"No, none of these"},
+    next: () => "check"
+  }
+};
+
+const QUESTION_LABELS = {
+  who:"Checking for", age:"Age", pregnancy:"Pregnant", weeks:"Weeks pregnant",
+  immuno:"Weakened immune system", conditions:"Health conditions", work:"Work",
+  student:"Starting university or college", childAge:"Child's age", childRisk:"Applies to the child"
+};
+
+/* =========================================================
+   App engine
+   ========================================================= */
+const App = (() => {
+  let answers = {};
+  let trail = [];       // visited screen ids, in order
+  let current = "who";
+  let fromCheck = false;
+  const el = () => document.getElementById("app");
+
+  function restart(){ answers = {}; trail = []; current = "who"; fromCheck = false; render(true); return false; }
+
+  function displayAnswer(id){
+    const s = SCREENS[id], v = answers[s.name];
+    if (v === undefined) return "";
+    if (s.type === "number") return v + (s.suffix ? " " + s.suffix : "");
+    if (s.type === "checkboxes"){
+      if (v.includes("none")) return "None of these";
+      const all = s.options.concat(s.noneOption ? [s.noneOption] : []);
+      return v.map(x => (all.find(o => o.value === x) || {label:x}).label).join("; ");
+    }
+    return (s.options.find(o => o.value === v) || {label:v}).label;
+  }
+
+  function esc(t){ return String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+  /* ---------- rendering ---------- */
+  function backLink(){
+    return (trail.length || fromCheck)
+      ? '<div class="nhsuk-back-link"><a href="#" onclick="return App.back()">Go back</a></div>' : "";
+  }
+
+  function errorSummary(msg, target){
+    return `<div class="nhsuk-error-summary" role="alert" tabindex="-1" id="error-summary">
+      <h2>There is a problem</h2>
+      <p><a href="#${target}">${esc(msg)}</a></p></div>`;
+  }
+
+  function detailsBlock(d){
+    return d ? `<details class="nhsuk-details"><summary>${esc(d.summary)}</summary>
+      <div class="nhsuk-details__text">${d.html}</div></details>` : "";
+  }
+
+  function renderQuestion(id, error){
+    const s = SCREENS[id];
+    let inner = "";
+    if (s.type === "radios" || s.type === "checkboxes"){
+      const cls = s.type === "radios" ? "radios" : "checkboxes";
+      const opts = s.options.map((o,i) => {
+        const iid = `${s.name}-${i}`;
+        const val = answers[s.name];
+        const checked = s.type === "radios" ? val === o.value : Array.isArray(val) && val.includes(o.value);
+        return `<div class="nhsuk-${cls}__item">
+          <input class="nhsuk-${cls}__input" id="${iid}" name="${s.name}" type="${s.type === "radios" ? "radio" : "checkbox"}" value="${o.value}" ${checked ? "checked" : ""} ${s.type === "checkboxes" ? 'onchange="App.uncheckNone(this)"' : ""}>
+          <label class="nhsuk-${cls}__label" for="${iid}">${esc(o.label)}${o.hint ? `<span class="nhsuk-radios__hint">${esc(o.hint)}</span>` : ""}</label>
+        </div>`;
+      }).join("");
+      const none = s.noneOption ? `<div class="nhsuk-checkboxes__divider">or</div>
+        <div class="nhsuk-${cls}__item">
+          <input class="nhsuk-${cls}__input" id="${s.name}-none" name="${s.name}" type="checkbox" value="none" ${Array.isArray(answers[s.name]) && answers[s.name].includes("none") ? "checked" : ""} onchange="App.checkNone(this)">
+          <label class="nhsuk-${cls}__label" for="${s.name}-none">${esc(s.noneOption.label)}</label>
+        </div>` : "";
+      inner = `<fieldset class="nhsuk-fieldset" aria-describedby="${s.hint ? "q-hint" : ""} ${error ? "q-error" : ""}">
+        <legend class="nhsuk-fieldset__legend"><h1 tabindex="-1" id="page-heading">${esc(s.legend)}</h1></legend>
+        ${s.hint ? `<p class="nhsuk-hint" id="q-hint">${esc(s.hint)}</p>` : ""}
+        ${detailsBlock(s.details)}
+        ${error ? `<span class="nhsuk-error-message" id="q-error"><span class="nhsuk-u-visually-hidden">Error:</span> ${esc(error)}</span>` : ""}
+        ${opts}${none}
+      </fieldset>`;
+    } else if (s.type === "number"){
+      inner = `<h1 tabindex="-1" id="page-heading"><label for="${s.name}-0">${esc(s.legend)}</label></h1>
+        ${s.hint ? `<p class="nhsuk-hint" id="q-hint">${esc(s.hint)}</p>` : ""}
+        ${detailsBlock(s.details)}
+        ${error ? `<span class="nhsuk-error-message" id="q-error"><span class="nhsuk-u-visually-hidden">Error:</span> ${esc(error)}</span>` : ""}
+        <input class="nhsuk-input nhsuk-input--width-4 ${error ? "nhsuk-input--error" : ""}" id="${s.name}-0" name="${s.name}" type="text" inputmode="numeric" pattern="[0-9]*" value="${answers[s.name] !== undefined ? esc(answers[s.name]) : ""}" aria-describedby="${s.hint ? "q-hint" : ""} ${error ? "q-error" : ""}">`;
+    }
+    el().innerHTML = `${backLink()}
+      ${error ? errorSummary(error, s.name + "-0") : ""}
+      <form onsubmit="return App.submit('${id}')" novalidate>
+        <div class="nhsuk-form-group ${error ? "nhsuk-form-group--error" : ""}">${inner}</div>
+        <button class="nhsuk-button" type="submit">Continue</button>
+      </form>`;
+    focusStart(error);
+  }
+
+  function focusStart(error){
+    window.scrollTo(0,0);
+    const t = error ? document.getElementById("error-summary") : document.getElementById("page-heading");
+    if (t) t.focus();
+  }
+
+  /* ---------- validation + navigation ---------- */
+  function validate(s){
+    if (s.type === "radios"){
+      const v = document.querySelector(`input[name="${s.name}"]:checked`);
+      return v ? {value:v.value} : {error:s.error};
+    }
+    if (s.type === "checkboxes"){
+      const v = [...document.querySelectorAll(`input[name="${s.name}"]:checked`)].map(i => i.value);
+      return v.length ? {value:v} : {error:s.error};
+    }
+    const raw = document.getElementById(s.name + "-0").value.trim();
+    if (!raw) return {error:s.errors.empty};
+    const n = Number(raw);
+    if (!Number.isFinite(n) || n < s.min || n > s.max || !/^\d+$/.test(raw)) return {error:s.errors.range};
+    return {value:n};
+  }
+
+  function submit(id){
+    const s = SCREENS[id];
+    const r = validate(s);
+    if (r.error){ renderQuestion(id, r.error); return false; }
+    answers[s.name] = r.value;
+    trail.push(id);
+    const next = s.next(answers);
+    if (fromCheck && next !== "check" && answers[SCREENS[next].name] !== undefined){
+      current = "check"; fromCheck = false; renderCheck();
+    } else {
+      if (next === "check") fromCheck = false;
+      current = next;
+      next === "check" ? renderCheck() : renderQuestion(next);
+    }
+    return false;
+  }
+
+  function back(){
+    if (current === "check" || !trail.length){
+      if (!trail.length) return restart();
+    }
+    fromCheck = false;
+    current = trail.pop();
+    renderQuestion(current);
+    return false;
+  }
+
+  function change(id){
+    fromCheck = true;
+    current = id;
+    renderQuestion(id);
+    return false;
+  }
+
+  function uncheckNone(box){
+    if (box.checked){ const n = document.getElementById(box.name + "-none"); if (n) n.checked = false; }
+  }
+  function checkNone(box){
+    if (box.checked) document.querySelectorAll(`input[name="${box.name}"]`).forEach(i => { if (i !== box) i.checked = false; });
+  }
+
+  /* ---------- check your answers ---------- */
+  function renderCheck(){
+    const seen = new Set();
+    const rows = trail.filter(id => { if (seen.has(id)) return false; seen.add(id); return answers[SCREENS[id].name] !== undefined; })
+      .map(id => `<tr class="nhsuk-summary-list__row">
+        <td class="nhsuk-summary-list__key">${esc(QUESTION_LABELS[id])}</td>
+        <td class="nhsuk-summary-list__value">${esc(displayAnswer(id))}</td>
+        <td class="nhsuk-summary-list__actions"><a href="#" onclick="return App.change('${id}')">Change<span class="nhsuk-u-visually-hidden"> ${esc(QUESTION_LABELS[id].toLowerCase())}</span></a></td>
+      </tr>`).join("");
+    el().innerHTML = `${backLink()}
+      <h1 tabindex="-1" id="page-heading">Check your answers</h1>
+      <table class="nhsuk-summary-list"><tbody>${rows}</tbody></table>
+      <button class="nhsuk-button" onclick="App.results()">See which vaccinations to look into</button>`;
+    focusStart();
+  }
+
+  /* ---------- results ---------- */
+  function addRec(map, key, reason){
+    if (!map.has(key)) map.set(key, []);
+    if (reason && !map.get(key).includes(reason)) map.get(key).push(reason);
+  }
+
+  function adultResults(){
+    const a = answers, recs = new Map(), notes = [];
+    const age = Number(a.age);
+
+    // Routine by age
+    if (age >= 65){
+      addRec(recs,"flu","you're aged 65 or over — offered every year");
+      addRec(recs,"pneumo","you're aged 65 or over");
+    }
+    if (age >= 70 && age <= 79) addRec(recs,"shingles","you're aged 70 to 79");
+    else if (age >= 65 && age < 70) addRec(recs,"shingles","you're 65 or over — eligible if you turned 65 on or after 1 September 2023 (check with your GP surgery)");
+    if (age >= 75){
+      addRec(recs,"rsv","you're aged 75 or over");
+      addRec(recs,"covid","you're aged 75 or over");
+    }
+
+    // Pregnancy
+    if (a.pregnancy === "yes"){
+      const w = Number(a.weeks);
+      addRec(recs,"fluPreg","you're pregnant — recommended during flu season at any stage");
+      addRec(recs,"wcough", w >= 20 ? `you're ${w} weeks pregnant — this is usually offered from around 20 weeks, so ask about it now if you've not had it` : `you're pregnant — it will be offered from around 20 weeks (you're at ${w} weeks now)`);
+      addRec(recs,"rsvPreg", w >= 28 ? `you're ${w} weeks pregnant — offered from 28 weeks, so ask about it now` : `you're pregnant — it will be offered from 28 weeks (you're at ${w} weeks now)`);
+    }
+
+    // Weakened immune system
+    if (a.immuno === "yes"){
+      addRec(recs,"pneumo","you have a weakened immune system");
+      addRec(recs,"flu","you have a weakened immune system — offered every year");
+      addRec(recs,"covid","you have a weakened immune system");
+      if (age >= 18) addRec(recs,"shingles","you have a weakened immune system and are aged 18 or over");
+    }
+    if (a.immuno === "notsure"){
+      notes.push({title:"Not sure about your immune system?", html:"<p>Your GP surgery can check your records and tell you whether you count as immunosuppressed. If you are, you may also be offered the pneumococcal, flu, COVID-19 and shingles vaccines.</p>"});
+    }
+
+    // Health conditions
+    (a.conditions || []).forEach(c => {
+      const rule = CONDITION_RULES[c];
+      if (rule) rule.vaccines.forEach(v => addRec(recs, v, rule.reason));
+    });
+
+    // Work
+    const work = a.work || [];
+    if (work.includes("frontline") || work.includes("socialcare")){
+      addRec(recs,"flu","you work in frontline health or social care — offered every year");
+      addRec(recs,"covid","you work in frontline health or social care (when a seasonal campaign includes staff)");
+      if (work.includes("frontline")) addRec(recs,"hepb","your work may bring you into contact with blood or body fluids");
+    }
+    if (work.includes("lab")) addRec(recs,"hepb","you handle infectious samples at work");
+    if (work.length && !work.includes("none")){
+      notes.push({title:"Work vaccinations", html:"<p>Vaccinations you need because of your job are usually arranged and paid for by your employer through their occupational health service — ask them first rather than your GP.</p>"});
+    }
+
+    // University or college
+    if (a.student === "yes"){
+      addRec(recs,"menacwy","you're starting university or college — protects against serious infections like meningitis");
+      addRec(recs,"mmr","outbreaks of measles and mumps happen at universities — make sure you've had 2 doses");
+      addRec(recs,"hpv","if you missed the HPV vaccine at school, you can still catch up");
+      addRec(recs,"menb","from 20 July 2026, new students aged 24 or under starting university or some residential further education can get the MenB vaccine");
+    } else if (age <= 24){
+      notes.push({title:"Under 25?", html:"<p>You can still catch up on the <a href='https://www.nhs.uk/vaccinations/menacwy-vaccine/' target='_blank' rel='noopener'>MenACWY vaccine</a> until your 25th birthday, and on <a href='https://www.nhs.uk/vaccinations/mmr-vaccine/' target='_blank' rel='noopener'>MMR</a> at any age, if you missed them.</p>"});
+    }
+
+    return {recs, notes};
+  }
+
+  function childResults(){
+    const a = answers, recs = new Map(), notes = [];
+    const band = a.childAge;
+
+    if (band === "baby"){
+      addRec(recs,"sixin1","given at 8, 12 and 16 weeks old");
+      addRec(recs,"rota","given at 8 and 12 weeks old");
+      addRec(recs,"menbBaby","given at 8 weeks, 12 weeks and 1 year old");
+      addRec(recs,"pneumoBaby","first dose at 16 weeks old");
+    }
+    if (band === "toddler"){
+      addRec(recs,"mmrv","first dose at 1 year old (for children born on or after 1 January 2025); timing of doses depends on date of birth");
+      addRec(recs,"pneumoBaby","second dose at 1 year old");
+      addRec(recs,"menbBaby","third dose at 1 year old");
+      addRec(recs,"sixin1","fourth dose at 18 months (for babies born on or after 1 July 2024)");
+      addRec(recs,"childflu","every year from age 2");
+      addRec(recs,"fourin1","due at 3 years 4 months");
+    }
+    if (band === "primary"){
+      addRec(recs,"childflu","offered every year until the end of Year 11");
+      notes.push({title:"Check earlier vaccines", html:"<p>Check the child's red book or ask the GP surgery that they've had the 4-in-1 pre-school booster and 2 doses of MMR/MMRV. It's not too late to catch up.</p>"});
+    }
+    if (band === "yr8"){
+      addRec(recs,"hpvTeen","offered at 12 to 13 (school Year 8)");
+      addRec(recs,"childflu","offered every year until the end of Year 11");
+    }
+    if (band === "teen"){
+      addRec(recs,"tdipv","offered at 14 (school Year 9)");
+      addRec(recs,"menacwyTeen","offered at 14 (school Year 9)");
+      addRec(recs,"childflu","offered every year until the end of Year 11");
+    }
+
+    const r = a.childRisk || [];
+    if (r.includes("condition")) addRec(recs,"childflu","they have a long-term health condition — offered every year from 6 months to 17 years");
+    if (r.includes("immuno")) addRec(recs,"covid","they have a weakened immune system — usually offered in spring and winter (from 6 months old)");
+    if (r.includes("hepbmum")) addRec(recs,"hepb","their mother has hepatitis B — doses at birth and 4 weeks (and 12 months for babies born on or before 30 June 2024)");
+    if (r.includes("tb")) addRec(recs,"bcg","they're at higher risk of TB — usually given at around 4 weeks old, but older children can still be assessed");
+
+    notes.push({title:"Missed a vaccine?", html:"<p>It's best to have vaccines on time, but most can be caught up. Contact the GP surgery to book or rearrange.</p>"});
+    return {recs, notes};
+  }
+
+  function results(){
+    const isChild = answers.who === "child";
+    const {recs, notes} = isChild ? childResults() : adultResults();
+
+    let cards = "";
+    recs.forEach((reasons, key) => {
+      const v = V[key];
+      cards += `<div class="nhsuk-card"><div class="nhsuk-card__content">
+        <h3><a href="${v.url}" target="_blank" rel="noopener">${esc(v.name)}</a></h3>
+        <p class="nhsuk-body-s"><strong>When:</strong> ${esc(v.when)}</p>
+        <p class="nhsuk-body-s"><strong>Why${isChild ? "" : " you"}:</strong></p>
+        <ul class="nhsuk-body-s">${reasons.map(r => `<li>${r}</li>`).join("")}</ul>
+      </div></div>`;
+    });
+
+    const noteBlocks = notes.map(n => `<div class="nhsuk-inset-text"><h3>${esc(n.title)}</h3>${n.html}</div>`).join("");
+
+    const noneMsg = `<div class="nhsuk-inset-text">
+      <p>Based on your answers, ${isChild ? "the child is" : "you're"} not currently in a group offered extra routine NHS vaccinations.</p>
+      <p>It's still worth checking you've had 2 doses of the <a href="https://www.nhs.uk/vaccinations/mmr-vaccine/" target="_blank" rel="noopener">MMR vaccine</a> — you can catch up at any age.</p>
+    </div>`;
+
+    el().innerHTML = `${backLinkToCheck()}
+      <h1 tabindex="-1" id="page-heading">Vaccinations to look into</h1>
+      <p class="nhsuk-hint">Based on your answers and the <a href="https://www.nhs.uk/vaccinations/nhs-vaccinations-and-when-to-have-them/" target="_blank" rel="noopener">NHS vaccination schedule</a>. Select a vaccine to read about it on the NHS website.</p>
+      ${recs.size ? cards : noneMsg}
+      ${noteBlocks}
+      <div class="nhsuk-care-card">
+        <h2 class="nhsuk-care-card__heading">Speak to your GP surgery, pharmacist or midwife</h2>
+        <div class="nhsuk-care-card__content">
+          <p>This tool is a high-level guide, not medical advice. Whether a vaccine is right for ${isChild ? "the child" : "you"} depends on ${isChild ? "their" : "your"} full medical history and vaccination record, which only a health professional can check.</p>
+        </div>
       </div>
-    </details>
-    <div class="choices" role="radiogroup" aria-label="Weakened immune system">
-      <label class="choice"><input type="radio" name="immuno" value="yes">Yes</label>
-      <label class="choice"><input type="radio" name="immuno" value="no">No</label>
-      <label class="choice"><input type="radio" name="immuno" value="unsure">Not sure<small>We'll include the relevant vaccines flagged as "check with your GP"</small></label>
-    </div>
-    <p class="error" id="err-immuno">Select an option</p>
-    <div class="nav">
-      <button class="btn" onclick="validateRadio('immuno', 4)">Continue</button>
-      <button class="btn secondary" onclick="go(2)">Back</button>
-    </div>
-  </section>
+      <button class="nhsuk-button nhsuk-button--secondary" onclick="App.restart()">Start again</button>`;
+    focusStart();
+    current = "results";
+  }
 
-  <!-- ============ Q4 CONDITIONS ============ -->
-  <section class="step" id="step-4">
-    <p class="progress">Question 4 of 6</p>
-    <div class="progress-bar"><span style="width:66%"></span></div>
-    <h2>Do you have any of these long-term health conditions?</h2>
-    <p class="hint">Select all that apply. Some vaccines are offered on the NHS specifically because a condition puts you at higher risk.</p>
-    <div class="choices">
-      <label class="choice"><input type="checkbox" name="cond" value="spleen">Problems with your spleen<small>Including a removed spleen, or spleen damage from sickle cell disease or coeliac disease</small></label>
-      <label class="choice"><input type="checkbox" name="cond" value="cochlear">Cochlear implant</label>
-      <label class="choice"><input type="checkbox" name="cond" value="resp">Chronic respiratory or heart condition<small>For example severe asthma, COPD or heart failure</small></label>
-      <label class="choice"><input type="checkbox" name="cond" value="neuro">Chronic neurological condition<small>For example Parkinson's disease, or a learning disability</small></label>
-      <label class="choice"><input type="checkbox" name="cond" value="diabetes">Diabetes</label>
-      <label class="choice"><input type="checkbox" name="cond" value="kidney">Chronic kidney disease</label>
-      <label class="choice"><input type="checkbox" name="cond" value="liver">Chronic liver condition</label>
-      <label class="choice"><input type="checkbox" name="cond" value="haemo">Haemophilia</label>
-      <label class="choice"><input type="checkbox" name="cond" value="complement">Complement disorder<small>Or receiving complement inhibitor therapy, such as eculizumab</small></label>
-      <label class="choice"><input type="checkbox" name="cond" value="none" id="cond-none">None of these</label>
-    </div>
-    <div class="nav">
-      <button class="btn" onclick="go(5)">Continue</button>
-      <button class="btn secondary" onclick="go(3)">Back</button>
-    </div>
-  </section>
+  function backLinkToCheck(){
+    return '<div class="nhsuk-back-link"><a href="#" onclick="return App.backToCheck()">Go back</a></div>';
+  }
+  function backToCheck(){ current = "check"; renderCheck(); return false; }
 
-  <!-- ============ Q5 CIRCUMSTANCES ============ -->
-  <section class="step" id="step-5">
-    <p class="progress">Question 5 of 6</p>
-    <div class="progress-bar"><span style="width:83%"></span></div>
-    <h2>Do any of these circumstances apply to you?</h2>
-    <p class="hint">Select all that apply.</p>
-    <div class="choices">
-      <label class="choice"><input type="checkbox" name="circ" value="uni">Starting university or college for the first time<small>And aged 24 or under</small></label>
-      <label class="choice"><input type="checkbox" name="circ" value="carehome">I live in a care home for older adults</label>
-      <label class="choice"><input type="checkbox" name="circ" value="none" id="circ-none">None of these</label>
-    </div>
-    <div class="nav">
-      <button class="btn" onclick="go(6)">Continue</button>
-      <button class="btn secondary" onclick="go(4)">Back</button>
-    </div>
-  </section>
+  /* ---------- start page ---------- */
+  function render(focusHeading){
+    el().innerHTML = `
+      <h1 tabindex="-1" id="page-heading">Check which NHS vaccinations you may be eligible for</h1>
+      <p>Use this tool to find out which routine NHS vaccinations you — or a child you care for — may be able to get, based on age, pregnancy, health conditions and work.</p>
+      <p>It takes about 2 minutes. You will not be asked for your name or any contact details, and your answers are not stored or sent anywhere.</p>
+      <div class="nhsuk-inset-text"><p>This checker is a design prototype based on <a href="https://www.nhs.uk/vaccinations/nhs-vaccinations-and-when-to-have-them/" target="_blank" rel="noopener">NHS vaccinations and when to have them</a>. It does not replace advice from a GP, pharmacist or midwife.</p></div>
+      <button class="nhsuk-button" onclick="App.begin()">Start now</button>`;
+    window.scrollTo(0,0);
+    if (focusHeading) document.getElementById("page-heading").focus();
+  }
 
-  <!-- ============ Q6 WORK ============ -->
-  <section class="step" id="step-6">
-    <p class="progress">Question 6 of 6</p>
-    <div class="progress-bar"><span style="width:100%"></span></div>
-    <h2>Does your work involve any of these?</h2>
-    <p class="hint">Some jobs come with a higher infection risk, so extra vaccinations are recommended or provided through your employer. Select all that apply.</p>
-    <div class="choices">
-      <label class="choice"><input type="checkbox" name="work" value="healthcare">Frontline health or social care<small>Direct contact with patients or people receiving care</small></label>
-      <label class="choice"><input type="checkbox" name="work" value="lab">Laboratory or pathology work<small>Handling blood, tissue or other clinical specimens</small></label>
-      <label class="choice"><input type="checkbox" name="work" value="contact">Prison, homelessness or asylum support services<small>Regular close contact in higher-risk settings</small></label>
-      <label class="choice"><input type="checkbox" name="work" value="none" id="work-none">None of these</label>
-    </div>
-    <div class="nav">
-      <button class="btn" onclick="showResults()">See my results</button>
-      <button class="btn secondary" onclick="go(5)">Back</button>
-    </div>
-  </section>
+  function begin(){ current = "who"; trail = []; answers = {}; fromCheck = false; renderQuestion("who"); }
 
-  <!-- ============ RESULTS ============ -->
-  <section class="step" id="step-results">
-    <h1>Vaccinations worth looking into</h1>
-    <p class="hint" id="results-summary"></p>
-    <div id="results"></div>
-    <div class="disclaimer">
-      <p><strong>How this works:</strong> recommendations are derived from the NHS page <a href="https://www.nhs.uk/vaccinations/nhs-vaccinations-and-when-to-have-them/" target="_blank" rel="noopener">NHS vaccinations and when to have them</a>. Occupational recommendations are indicative only — eligibility for those sits with your employer's occupational health service, not this page. This prototype is not medical advice; speak to your GP surgery about anything listed here, and about catching up on any missed routine vaccinations (including MMR if you haven't had 2 doses).</p>
-    </div>
-    <div class="nav" style="margin-top:1.5rem">
-      <button class="btn secondary" onclick="restart()">Start again</button>
-    </div>
-  </section>
+  return {restart, submit, back, change, results, begin, uncheckNone, checkNone, backToCheck, render};
+})();
+window.App = App;
 
-</main>
-
-<script src="script.js"></script>
+/* boot */
+document.addEventListener("DOMContentLoaded", () => App.render(false));
+</script>
 </body>
 </html>
