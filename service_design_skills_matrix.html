@@ -3,9 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <title>Service Design Skills Matrix — Self-Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     --berry: #D15B9B;
+    --berry-deep: #b5447f;
+    --berry-deeper: #9c3868;
     --lime: #C6D624;
     --teal: #5DBDCB;
     --blush: #E47CB8;
@@ -15,26 +19,34 @@
     --accent: #D15B9B;
     --text: #2b1f26;
     --border: #ecdfe8;
-    --bg: #fdfaf9;
+    --bg: #fffdfb;
   }
   * { box-sizing: border-box; }
   body {
-    font-family: Arial, Helvetica, sans-serif;
-    background: var(--bg);
+    font-family: 'Nunito', Arial, Helvetica, sans-serif;
+    background:
+      radial-gradient(circle at 6% 0%, rgba(93,189,203,0.20), transparent 38%),
+      radial-gradient(circle at 96% 8%, rgba(198,214,36,0.22), transparent 40%),
+      radial-gradient(circle at 30% 60%, rgba(228,124,184,0.14), transparent 45%),
+      radial-gradient(circle at 90% 90%, rgba(209,91,155,0.14), transparent 40%),
+      var(--bg);
+    background-attachment: fixed;
     color: var(--text);
     margin: 0;
     padding: 0 0 60px 0;
   }
+  h1, .skill-name, .category-title, .rating-label { font-family: 'Baloo 2', 'Nunito', Arial, sans-serif; }
+
   header {
     position: relative;
     overflow: hidden;
     background:
-      radial-gradient(circle at 12% 18%, rgba(209,91,155,0.65), transparent 55%),
-      radial-gradient(circle at 90% 12%, rgba(198,214,36,0.45), transparent 55%),
-      radial-gradient(circle at 60% 90%, rgba(93,189,203,0.25), transparent 60%),
-      linear-gradient(160deg, #3a1f30 0%, #23241a 100%);
+      radial-gradient(circle at 12% 20%, rgba(209,91,155,0.9), transparent 50%),
+      radial-gradient(circle at 88% 10%, rgba(198,214,36,0.75), transparent 50%),
+      radial-gradient(circle at 55% 100%, rgba(93,189,203,0.65), transparent 55%),
+      linear-gradient(135deg, #7a2f56 0%, #3d6b3a 100%);
     color: #fff;
-    padding: 32px 24px 26px;
+    padding: 40px 24px 34px;
   }
   header::before {
     content: "";
@@ -42,70 +54,94 @@
     inset: 0;
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.4'/></svg>");
     mix-blend-mode: overlay;
-    opacity: 0.55;
+    opacity: 0.35;
     pointer-events: none;
   }
-  header h1, header p { position: relative; z-index: 1; }
-  header h1 { margin: 0 0 6px 0; font-size: 22px; }
-  header p { margin: 0; font-size: 14px; opacity: 0.92; max-width: 760px; line-height: 1.5; }
+  header h1, header p, header .eyebrow { position: relative; z-index: 1; }
+  header .eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.18);
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+  header h1 { margin: 0 0 10px 0; font-size: 26px; font-weight: 800; text-shadow: 0 2px 10px rgba(0,0,0,0.15); }
+  header p { margin: 0; font-size: 14.5px; opacity: 0.96; max-width: 760px; line-height: 1.55; }
 
   .container { max-width: 900px; margin: 0 auto; padding: 24px 20px; }
 
   .respondent {
     background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 8px;
+    border: 2px solid var(--border);
+    border-radius: 14px;
     padding: 18px 20px;
-    margin-bottom: 24px;
+    margin-bottom: 26px;
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
+    box-shadow: 0 4px 14px rgba(58,31,48,0.06);
   }
-  .respondent label { display: block; font-size: 13px; font-weight: bold; margin-bottom: 4px; }
+  .respondent label { display: block; font-size: 13px; font-weight: 800; margin-bottom: 4px; color: var(--dark); }
   .respondent input {
-    padding: 8px 10px;
-    border: 1px solid var(--border);
-    border-radius: 5px;
+    padding: 9px 11px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
     font-size: 14px;
     min-width: 220px;
     font-family: inherit;
   }
+  .respondent input:focus { outline: none; border-color: var(--teal); }
   .field { flex: 1; min-width: 220px; }
 
   .category-title {
-    background: var(--dark-light);
-    color: var(--dark);
-    font-weight: bold;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 800;
     font-size: 13px;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.05em;
     text-transform: uppercase;
-    padding: 10px 14px;
-    border-radius: 6px;
-    margin: 28px 0 14px 0;
+    padding: 9px 18px;
+    border-radius: 999px;
+    margin: 30px 0 14px 0;
+    box-shadow: 0 4px 12px rgba(58,31,48,0.12);
   }
 
   .skill-card {
     background: #fff;
-    border: 1px solid var(--border);
-    border-left: 5px solid var(--berry);
-    border-radius: 8px;
-    padding: 16px 18px 18px;
-    margin-bottom: 14px;
+    border: 2px solid var(--border);
+    border-left: 6px solid var(--berry);
+    border-radius: 16px;
+    padding: 18px 20px 20px;
+    margin-bottom: 16px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 3px 10px rgba(58,31,48,0.05);
   }
-  .skill-name { font-size: 16px; font-weight: bold; margin: 0 0 4px 0; color: var(--dark); }
-  .skill-desc { font-size: 13.5px; color: #4a5a61; margin: 0 0 12px 0; font-style: italic; line-height: 1.4; }
+  .skill-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 24px rgba(58,31,48,0.12);
+  }
+  .skill-name { font-size: 17px; font-weight: 700; margin: 0 0 4px 0; color: var(--dark); }
+  .skill-desc { font-size: 13.5px; color: #5c4a55; margin: 0 0 12px 0; line-height: 1.45; }
 
   details.levels {
-    margin-bottom: 14px;
+    margin-bottom: 16px;
     font-size: 13px;
   }
   details.levels summary {
     cursor: pointer;
-    color: var(--accent);
-    font-weight: bold;
+    color: var(--berry-deep);
+    font-weight: 800;
     font-size: 12.5px;
     outline: none;
+    list-style: none;
   }
+  details.levels summary::-webkit-details-marker { display: none; }
+  details.levels summary::before { content: "✦ "; }
   .levels-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -113,69 +149,125 @@
     margin-top: 10px;
   }
   .level-col {
-    background: var(--bg);
     border: 1px solid var(--border);
-    border-top: 3px solid var(--teal);
-    border-radius: 6px;
-    padding: 8px 10px;
+    border-top: 4px solid var(--teal);
+    border-radius: 10px;
+    padding: 9px 10px;
   }
-  .level-col h4 { margin: 0 0 6px 0; font-size: 12px; color: var(--dark); }
+  .level-col h4 { margin: 0 0 6px 0; font-size: 12px; color: var(--dark); font-family: 'Baloo 2', sans-serif; }
   .level-col ul { margin: 0; padding-left: 16px; }
   .level-col li { margin-bottom: 4px; line-height: 1.35; }
 
   .rating-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 18px;
+    gap: 10px;
     align-items: center;
-    padding-top: 8px;
-    border-top: 1px dashed var(--border);
+    padding-top: 12px;
+    border-top: 2px dashed var(--border);
   }
-  .rating-label { font-size: 12.5px; font-weight: bold; color: var(--dark); margin-right: 4px; }
-  .radio-option {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    font-size: 13.5px;
+  .rating-label { font-size: 13px; font-weight: 800; color: var(--dark); margin-right: 6px; width: 100%; }
+
+  .radio-option { position: relative; display: inline-flex; }
+  .radio-option input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
   }
-  .radio-option input { width: 15px; height: 15px; }
-  .level-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 2px; }
+  .pill {
+    display: inline-block;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 2px solid var(--pill-color, var(--teal));
+    color: var(--dark);
+    font-weight: 800;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+    background: #fff;
+  }
+  .radio-option input:checked + .pill {
+    background: var(--pill-fill, var(--berry-deep));
+    border-color: var(--pill-fill, var(--berry-deep));
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    transform: translateY(-1px) scale(1.04);
+  }
+  .radio-option:hover .pill { transform: translateY(-1px); }
 
   .support-row {
-    margin-top: 12px;
+    margin-top: 14px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     font-size: 13.5px;
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--dark);
   }
-  .support-row input { accent-color: var(--accent); width: 15px; height: 15px; }
+  .support-row input { display: none; }
+  .support-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 7px;
+    border: 2.5px solid var(--pear);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+    background: #fffdf0;
+  }
+  .support-row input:checked + .support-check {
+    background: var(--pear);
+    box-shadow: 0 3px 8px rgba(225,227,110,0.5);
+  }
+  .support-row input:checked + .support-check::after {
+    content: "✓";
+    color: #4a4a05;
+    font-weight: 800;
+    font-size: 14px;
+  }
 
   .actions {
     background: #fff;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 20px;
-    margin-top: 28px;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    margin-top: 30px;
     position: sticky;
-    bottom: 0;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.04);
+    bottom: 12px;
+    box-shadow: 0 8px 24px rgba(58,31,48,0.12);
   }
-  .actions p { margin: 0 0 12px 0; font-size: 13px; color: #4a5a61; }
-  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .actions p { margin: 0 0 14px 0; font-size: 13px; color: #5c4a55; }
+  .btn-row { display: flex; gap: 12px; flex-wrap: wrap; }
   button {
-    font-family: inherit;
-    font-size: 14px;
-    font-weight: bold;
-    padding: 11px 18px;
-    border-radius: 6px;
+    font-family: 'Baloo 2', 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    padding: 13px 24px;
+    border-radius: 999px;
     border: none;
     cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
   }
-  .btn-primary { background: #b5447f; color: #fff; }
-  .btn-primary:hover { background: #9c3868; }
-  .btn-secondary { background: #fff; color: var(--dark); border: 1.5px solid var(--teal); }
-  .btn-secondary:hover { background: var(--dark-light); }
-  .status-msg { font-size: 13px; margin-top: 10px; color: var(--accent); font-weight: bold; min-height: 18px; }
+  .btn-primary {
+    background: linear-gradient(120deg, var(--berry-deep), var(--berry-deeper));
+    color: #fff;
+    box-shadow: 0 6px 16px rgba(181,68,127,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-2px) scale(1.02); box-shadow: 0 10px 22px rgba(181,68,127,0.45); }
+  .btn-secondary {
+    background: #fff;
+    color: var(--dark);
+    border: 2px solid var(--teal);
+  }
+  .btn-secondary:hover { background: var(--dark-light); transform: translateY(-2px); }
+  .status-msg { font-size: 13px; margin-top: 12px; color: var(--berry-deep); font-weight: 800; min-height: 18px; }
 
   .missing { outline: 2px solid #c0392b; outline-offset: 2px; }
 </style>
@@ -183,7 +275,8 @@
 <body>
 
 <header>
-  <h1>Service Design Skills Matrix — Self-Assessment</h1>
+  <span class="eyebrow">Self-assessment</span>
+  <h1>Service Design Skills Matrix</h1>
   <p>For each skill, read the level descriptions if you need them, select the level that best reflects where you are today, and flag anything you'd like more support or training on. When you're done, use the buttons at the bottom to send your responses.</p>
 </header>
 
@@ -341,15 +434,21 @@ const EMAIL_TO = "stephenocall3@gmail.com";
 
 // Dunn-Edwards palette mapped to categories and levels
 const CATEGORY_COLORS = {
-  "Craft & method":      { bg: "#5DBDCB", text: "#173238" }, // Faded Jeans
-  "Ways of thinking":    { bg: "#C6D624", text: "#333a05" }, // Lime Twist
+  "Craft & method":      { bg: "#5DBDCB", text: "#0f2a2f" }, // Faded Jeans
+  "Ways of thinking":    { bg: "#C6D624", text: "#2d3305" }, // Lime Twist
   "Consulting practice": { bg: "#E47CB8", text: "#3a1f30" }  // Fuchsia Blush
 };
 const LEVEL_COLORS = {
-  "Aware": "#5DBDCB",      // Faded Jeans
+  "Aware": "#5DBDCB",      // Faded Jeans — bright, used for borders/dots
   "Proficient": "#C6D624", // Lime Twist
   "Advanced": "#E47CB8",   // Fuchsia Blush
   "Expert": "#D15B9B"      // Crushed Berries
+};
+const LEVEL_FILLS = {
+  "Aware": "#377179",      // deepened for AA contrast when used as a fill with white text
+  "Proficient": "#6c7513",
+  "Advanced": "#884a6e",
+  "Expert": "#7d365d"
 };
 
 function slug(str) {
@@ -383,7 +482,7 @@ function render() {
 
       let radiosHtml = "";
       LEVELS.forEach(lvl => {
-        radiosHtml += `<label class="radio-option"><input type="radio" name="level-${id}" value="${lvl}" style="accent-color:${LEVEL_COLORS[lvl]}"> <span class="level-dot" style="background:${LEVEL_COLORS[lvl]}"></span>${lvl}</label>`;
+        radiosHtml += `<label class="radio-option"><input type="radio" name="level-${id}" value="${lvl}"><span class="pill" style="--pill-color:${LEVEL_COLORS[lvl]};--pill-fill:${LEVEL_FILLS[lvl]}">${lvl}</span></label>`;
       });
 
       card.innerHTML = `
@@ -397,10 +496,11 @@ function render() {
           <span class="rating-label">Current level:</span>
           ${radiosHtml}
         </div>
-        <div class="support-row">
+        <label class="support-row">
           <input type="checkbox" id="support-${id}">
-          <label for="support-${id}">I would like extra support or training on this skill</label>
-        </div>
+          <span class="support-check"></span>
+          I would like extra support or training on this skill
+        </label>
       `;
       root.appendChild(card);
     });
@@ -487,3 +587,4 @@ render();
 
 </body>
 </html>
+
