@@ -3,328 +3,639 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Vaccination Eligibility Checker — unofficial portfolio prototype (not NHS)</title>
+<title>Vaccination triage checker</title>
 <style>
 /* ============================================================
-   Portfolio prototype — hand-coded, self-contained
-   Layout and component patterns inspired by the open-source
-   gov.uk / NHS.UK design system pattern libraries.
-   This is an independent, unofficial project — not affiliated
-   with, endorsed by, or reviewed by the NHS or gov.uk.
+   Palette borrowed from the NHS colour tokens, so this sits in a
+   familiar visual register. No NHS logo, no NHS name, no claim to
+   be an NHS service. Colour only.
+   Accessibility patterns kept: high-contrast focus, one question
+   per page, error summaries, generous targets.
    ============================================================ */
 :root{
-  --gds-blue:#005eb8;
-  --gds-dark-blue:#003087;
-  --gds-text:#212b32;
-  --gds-secondary-text:#4c6272;
-  --gds-link:#005eb8;
-  --gds-link-hover:#7c2855;
-  --gds-link-visited:#330072;
-  --gds-link-active:#002f5c;
-  --gds-focus:#ffeb3b;
-  --gds-focus-text:#212b32;
-  --gds-border:#d8dde0;
-  --gds-input-border:#4c6272;
-  --gds-error:#d5281b;
-  --gds-green:#007f3b;
-  --gds-green-shadow:#00401e;
-  --gds-yellow:#ffeb3b;
-  --gds-pale-yellow:#fff9c4;
-  --gds-grey-5:#f0f4f5;
-  --gds-white:#ffffff;
+  --ink:#212b32;            /* NHS text */
+  --ink-muted:#4c6272;      /* NHS secondary text */
+  --accent:#005eb8;         /* NHS blue */
+  --accent-dark:#003087;    /* NHS dark blue */
+  --accent-pale:#e8f1f8;
+  --link-visited:#330072;
+  --link-hover:#7c2855;
+  --btn:#007f3b;            /* NHS green */
+  --btn-dark:#00401e;
+  --focus:#ffeb3b;          /* NHS focus yellow */
+  --focus-ink:#212b32;
+  --error:#d5281b;          /* NHS red */
+  --error-pale:#fbeceb;
+  --success:#007f3b;
+  --success-pale:#e6f2eb;
+  --border:#d8dde0;
+  --border-strong:#4c6272;
+  --surface:#f0f4f5;        /* NHS grey 5 */
+  --surface-alt:#e8edee;    /* NHS grey 4 */
+  --white:#ffffff;
+  --shadow:0 1px 2px rgba(33,43,50,.08);
 }
 *,*::before,*::after{box-sizing:border-box}
 html{font-size:16px}
 body{
   margin:0;
-  background:var(--gds-grey-5);
-  color:var(--gds-text);
-  font-family:"Frutiger W01",Arial,Helvetica,sans-serif;
+  background:var(--surface);
+  color:var(--ink);
+  font-family:Arial,Helvetica,"Helvetica Neue",sans-serif;
   font-size:19px;
-  line-height:1.47;
+  line-height:1.5;
   -webkit-font-smoothing:antialiased;
 }
-@media(max-width:640px){body{font-size:16px}}
+@media(max-width:640px){body{font-size:17px}}
 
-/* Skip link */
-.gds-skip-link{position:absolute;left:-9999px;padding:8px;background:var(--gds-white)}
-.gds-skip-link:focus{left:16px;top:16px;z-index:100;background:var(--gds-focus);color:var(--gds-focus-text);outline:4px solid transparent;box-shadow:0 -2px var(--gds-focus),0 4px var(--gds-focus-text)}
+.skip-link{position:absolute;left:-9999px;padding:8px;background:var(--white)}
+.skip-link:focus{left:16px;top:16px;z-index:100;background:var(--focus);color:var(--focus-ink);outline:4px solid transparent;box-shadow:0 -2px var(--focus),0 4px var(--focus-ink)}
 
 /* Prototype banner */
-.proto-banner{background:var(--gds-pale-yellow);border-bottom:1px solid var(--gds-border);padding:8px 0;font-size:16px}
-.proto-banner strong{background:var(--gds-text);color:var(--gds-white);padding:2px 8px;margin-right:8px;font-size:14px;letter-spacing:1px;text-transform:uppercase}
+.proto-banner{background:#fff9c4;border-bottom:1px solid var(--border);padding:10px 0;font-size:15px;color:var(--ink)}
+.proto-banner strong{background:var(--ink);color:var(--white);padding:3px 8px;margin-right:10px;font-size:12px;letter-spacing:.08em;text-transform:uppercase;border-radius:2px}
 
 /* Header */
-.gds-header{background:var(--gds-blue);padding:20px 0}
-.gds-header__inner{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.gds-header__logo{display:flex;align-items:center;text-decoration:none}
-.gds-header__logo svg{height:40px;width:100px;display:block}
-.gds-header__logo:focus{outline:none}
-.gds-header__logo:focus svg{box-shadow:0 0 0 4px var(--gds-focus),0 8px 0 0 var(--gds-focus-text)}
-.gds-header__service-name{color:var(--gds-white);font-size:22px;font-weight:600;text-decoration:none}
+.site-header{background:var(--accent);padding:20px 0}
+.site-header__inner{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.site-header__mark{width:28px;height:28px;border-radius:3px;background:var(--white);flex:none;display:grid;place-items:center;color:var(--accent);font-size:16px;font-weight:700}
+.site-header__name{color:var(--white);font-size:20px;font-weight:700;letter-spacing:0}
 
 /* Layout */
-.gds-width-container{max-width:960px;margin:0 auto;padding:0 16px}
-@media(min-width:641px){.gds-width-container{padding:0 32px}}
-.gds-main-wrapper{padding-top:24px;padding-bottom:48px}
-@media(min-width:641px){.gds-main-wrapper{padding-top:32px;padding-bottom:56px}}
-.gds-grid-two-thirds{max-width:640px}
+.container{max-width:900px;margin:0 auto;padding:0 16px}
+@media(min-width:641px){.container{padding:0 32px}}
+.main-wrapper{padding-top:28px;padding-bottom:64px}
+.col{max-width:640px}
 
 /* Typography */
-h1{font-size:32px;line-height:1.2;font-weight:700;margin:0 0 24px}
-@media(min-width:641px){h1{font-size:40px;margin-bottom:32px}}
-h2{font-size:26px;line-height:1.25;font-weight:700;margin:0 0 16px}
-@media(min-width:641px){h2{font-size:32px}}
-h3{font-size:20px;font-weight:700;margin:0 0 8px}
-@media(min-width:641px){h3{font-size:24px}}
+h1{font-size:31px;line-height:1.2;font-weight:700;letter-spacing:-.02em;margin:0 0 20px}
+@media(min-width:641px){h1{font-size:38px;margin-bottom:28px}}
+h2{font-size:24px;line-height:1.25;font-weight:700;letter-spacing:-.01em;margin:0 0 14px}
+@media(min-width:641px){h2{font-size:28px}}
+h3{font-size:19px;font-weight:700;margin:0 0 8px}
+@media(min-width:641px){h3{font-size:22px}}
 p{margin:0 0 16px}
-ul{margin:0 0 16px;padding-left:20px}
-li{margin-bottom:8px}
-a{color:var(--gds-link)}
-a:visited{color:var(--gds-link-visited)}
-a:hover{color:var(--gds-link-hover)}
-a:active{color:var(--gds-link-active)}
-a:focus{background:var(--gds-focus);color:var(--gds-focus-text);outline:4px solid transparent;box-shadow:0 -2px var(--gds-focus),0 4px var(--gds-focus-text);text-decoration:none}
-.gds-hint{color:var(--gds-secondary-text);margin:0 0 24px}
-.gds-caption{color:var(--gds-secondary-text);font-size:22px;display:block;margin-bottom:8px}
-.gds-body-s{font-size:16px}
+ul{margin:0 0 16px;padding-left:22px}
+li{margin-bottom:6px}
+a{color:var(--accent);text-decoration:underline;text-underline-offset:2px}
+a:visited{color:var(--link-visited)}
+a:hover{color:var(--link-hover)}
+a:active{color:var(--accent-dark)}
+a:focus{background:var(--focus);color:var(--focus-ink);outline:4px solid transparent;box-shadow:0 -2px var(--focus),0 4px var(--focus-ink);text-decoration:none}
+.hint{color:var(--ink-muted);margin:0 0 22px}
+.caption{color:var(--ink-muted);font-size:19px;display:block;margin-bottom:6px;font-weight:600}
+.small{font-size:15px}
+.muted{color:var(--ink-muted)}
+h1:focus,h2:focus,[tabindex="-1"]:focus{outline:none}
 
 /* Back link */
-.gds-back-link{display:inline-block;margin-bottom:24px;font-size:16px}
-.gds-back-link a{color:var(--gds-text);text-decoration:none;border-bottom:1px solid var(--gds-text);padding-left:14px;position:relative;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none;font:inherit}
-.gds-back-link a::before{content:"";position:absolute;left:0;top:50%;transform:translateY(-50%) rotate(45deg);width:8px;height:8px;border-left:2px solid var(--gds-text);border-bottom:2px solid var(--gds-text)}
-.gds-back-link a:hover{color:var(--gds-link-hover);border-color:var(--gds-link-hover)}
-.gds-back-link a:focus{background:var(--gds-focus);box-shadow:0 -2px var(--gds-focus),0 4px var(--gds-focus-text);outline:4px solid transparent;border-bottom:none}
+.back-link{display:inline-block;margin-bottom:22px;font-size:16px}
+.back-link a{color:var(--ink);text-decoration:none;border-bottom:1px solid var(--ink-muted);padding-bottom:1px}
+.back-link a::before{content:"\2190";margin-right:6px}
+.back-link a:hover{border-bottom-color:var(--ink)}
+.back-link a:focus{background:var(--focus);border-color:var(--focus-ink);color:var(--focus-ink)}
 
-/* Fieldset / legend */
-fieldset{border:0;margin:0;padding:0}
-.gds-fieldset__legend{margin-bottom:8px;padding:0}
-.gds-fieldset__legend h1{margin-bottom:16px}
+/* Buttons */
+.btn{
+  display:inline-block;font:inherit;font-weight:600;font-size:19px;line-height:1.2;
+  padding:13px 22px;border:2px solid transparent;border-radius:4px;cursor:pointer;
+  background:var(--btn);color:var(--white);box-shadow:0 4px 0 var(--btn-dark);
+  text-decoration:none;margin-bottom:6px;
+}
+.btn:hover{background:var(--btn-dark);color:var(--white)}
+.btn:active{box-shadow:none;transform:translateY(4px)}
+.btn:focus{background:var(--focus);color:var(--focus-ink);box-shadow:0 4px 0 var(--focus-ink);outline:4px solid transparent}
+.btn--secondary{background:var(--surface-alt);color:var(--ink);box-shadow:0 4px 0 var(--border-strong)}
+.btn--secondary:hover{background:var(--border);color:var(--ink)}
+.btn--small{font-size:16px;padding:9px 14px}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:8px}
 
-/* Form groups + errors */
-.gds-form-group{margin-bottom:32px}
-.gds-form-group--error{border-left:4px solid var(--gds-error);padding-left:16px}
-.gds-error-message{color:var(--gds-error);font-weight:700;display:block;margin-bottom:16px}
-.gds-error-summary{border:4px solid var(--gds-error);background:var(--gds-white);padding:16px;margin-bottom:32px}
-.gds-error-summary:focus{outline:4px solid var(--gds-focus)}
-.gds-error-summary h2{margin-bottom:8px;font-size:24px}
-.gds-error-summary a{color:var(--gds-error);font-weight:700}
+/* Link-styled button, for inline toggles */
+.linkbtn{
+  font:inherit;font-size:16px;background:none;border:0;padding:2px;margin:0;cursor:pointer;
+  color:var(--accent);text-decoration:underline;text-underline-offset:2px;
+}
+.linkbtn:hover{color:var(--accent-dark)}
+.linkbtn:focus{background:var(--focus);color:var(--focus-ink);outline:4px solid transparent;box-shadow:0 -2px var(--focus),0 4px var(--focus-ink);text-decoration:none}
 
-/* Radios */
-.gds-radios__item{position:relative;display:block;min-height:44px;margin-bottom:12px;padding:0 0 0 52px;clear:left}
-.gds-radios__input{position:absolute;left:-2px;top:-2px;width:48px;height:48px;margin:0;opacity:0;cursor:pointer;z-index:1}
-.gds-radios__label{display:inline-block;padding:8px 12px 8px 0;cursor:pointer}
-.gds-radios__label::before{content:"";position:absolute;left:0;top:2px;width:40px;height:40px;border:2px solid var(--gds-input-border);border-radius:50%;background:var(--gds-white)}
-.gds-radios__label::after{content:"";position:absolute;left:10px;top:12px;width:20px;height:20px;background:var(--gds-text);border-radius:50%;opacity:0}
-.gds-radios__input:checked+.gds-radios__label::after{opacity:1}
-.gds-radios__input:focus+.gds-radios__label::before{border-width:4px;box-shadow:0 0 0 4px var(--gds-focus)}
-.gds-radios__hint{display:block;color:var(--gds-secondary-text);font-size:16px;padding-right:12px}
+/* Fieldset, radios, checkboxes */
+fieldset{border:0;padding:0;margin:0 0 22px}
+legend{padding:0;margin:0}
+.legend-h1{font-size:31px;line-height:1.2;font-weight:700;letter-spacing:-.02em;margin-bottom:8px;display:block}
+@media(min-width:641px){.legend-h1{font-size:38px}}
+.option{
+  position:relative;padding:0 0 0 48px;margin-bottom:12px;min-height:44px;display:block;
+}
+.option input{position:absolute;left:0;top:0;width:44px;height:44px;opacity:0;cursor:pointer;margin:0;z-index:2}
+.option label{display:block;padding:9px 0;cursor:pointer;font-weight:500}
+.option label::before{
+  content:"";position:absolute;left:0;top:0;width:44px;height:44px;
+  border:2px solid var(--border-strong);background:var(--white);
+}
+.option--radio label::before{border-radius:50%}
+.option--check label::before{border-radius:0}
+.option label::after{content:"";position:absolute;opacity:0}
+.option--radio label::after{left:11px;top:11px;width:22px;height:22px;border-radius:50%;background:var(--ink)}
+.option--check label::after{
+  left:12px;top:15px;width:20px;height:10px;
+  border:solid var(--ink);border-width:0 0 4px 4px;transform:rotate(-45deg);background:none;
+}
+.option input:checked + label::after{opacity:1}
+.option input:focus + label::before{outline:4px solid var(--focus);outline-offset:1px;box-shadow:0 0 0 4px var(--focus)}
+.option input:hover:not(:disabled) + label::before{border-color:var(--ink)}
+.option .option-hint{display:block;color:var(--ink-muted);font-size:16px;font-weight:400;margin-top:2px}
+.option-divider{margin:16px 0;color:var(--ink-muted);font-size:16px}
 
-/* Checkboxes */
-.gds-checkboxes__item{position:relative;display:block;min-height:44px;margin-bottom:12px;padding:0 0 0 52px}
-.gds-checkboxes__input{position:absolute;left:-2px;top:-2px;width:48px;height:48px;margin:0;opacity:0;cursor:pointer;z-index:1}
-.gds-checkboxes__label{display:inline-block;padding:8px 12px 8px 0;cursor:pointer}
-.gds-checkboxes__label::before{content:"";position:absolute;left:0;top:2px;width:40px;height:40px;border:2px solid var(--gds-input-border);background:var(--gds-white)}
-.gds-checkboxes__label::after{content:"";position:absolute;left:9px;top:12px;width:18px;height:9px;border-left:4px solid var(--gds-text);border-bottom:4px solid var(--gds-text);transform:rotate(-45deg);opacity:0}
-.gds-checkboxes__input:checked+.gds-checkboxes__label::after{opacity:1}
-.gds-checkboxes__input:focus+.gds-checkboxes__label::before{border-width:4px;box-shadow:0 0 0 4px var(--gds-focus)}
-.gds-checkboxes__divider{margin-bottom:12px;color:var(--gds-text)}
+/* Text and date inputs */
+.field-label{display:block;font-weight:600;margin-bottom:6px}
+.input{
+  font:inherit;font-size:19px;padding:9px;border:2px solid var(--border-strong);
+  border-radius:0;background:var(--white);color:var(--ink);width:100%;max-width:320px;
+}
+.input:focus{outline:4px solid var(--focus);outline-offset:0;border-color:var(--ink);box-shadow:inset 0 0 0 2px var(--ink)}
+.input--error{border-color:var(--error)}
+.date-parts{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:8px}
+.date-part{display:flex;flex-direction:column}
+.date-part label{font-size:16px;font-weight:500;margin-bottom:4px}
+.date-part input{width:70px}
+.date-part--year input{width:100px}
 
-/* Text input */
-.gds-input{border:2px solid var(--gds-input-border);border-radius:0;padding:8px;font:inherit;height:48px;background:var(--gds-white);color:var(--gds-text);appearance:none}
-.gds-input:focus{outline:4px solid var(--gds-focus);outline-offset:0;box-shadow:inset 0 0 0 2px}
-.gds-input--error{border-color:var(--gds-error)}
-.gds-input--width-4{max-width:6em}
-.gds-label{display:block;margin-bottom:8px}
+/* Error handling */
+.error-summary{
+  border:4px solid var(--error);padding:18px;margin-bottom:26px;background:var(--white);
+}
+.error-summary:focus{outline:4px solid var(--focus);outline-offset:0}
+.error-summary h2{font-size:22px;margin-bottom:10px;color:var(--error)}
+.error-summary ul{margin:0;padding-left:20px}
+.error-summary a{color:var(--error);font-weight:600}
+.error-message{color:var(--error);font-weight:600;margin:0 0 10px;display:block}
+.form-group--error{border-left:5px solid var(--error);padding-left:16px}
 
-/* Button */
-.gds-button{background:var(--gds-green);border:2px solid transparent;border-radius:4px;box-shadow:0 4px 0 var(--gds-green-shadow);color:var(--gds-white);cursor:pointer;font:inherit;font-weight:600;margin:0 0 28px;padding:12px 24px;text-align:center;display:inline-block;text-decoration:none;-webkit-appearance:none}
-.gds-button:hover{background:#00662f}
-.gds-button:focus{background:var(--gds-focus);box-shadow:0 4px 0 var(--gds-focus-text);color:var(--gds-focus-text);outline:4px solid transparent}
-.gds-button:active{background:#00401e;box-shadow:none;top:4px;position:relative}
-.gds-button--secondary{background:var(--gds-white);border:2px solid var(--gds-blue);color:var(--gds-blue);box-shadow:0 4px 0 var(--gds-dark-blue)}
-.gds-button--secondary:hover{background:#e8edee}
-
-/* Details ("expander" style) */
-.gds-details{margin-bottom:32px;font-size:inherit}
-.gds-details summary{color:var(--gds-link);cursor:pointer;text-decoration:underline;display:inline-block;padding-left:24px;position:relative;list-style:none}
-.gds-details summary::-webkit-details-marker{display:none}
-.gds-details summary::before{content:"";position:absolute;left:2px;top:6px;border-style:solid;border-width:7px 0 7px 12px;border-color:transparent transparent transparent var(--gds-link)}
-.gds-details[open] summary::before{transform:rotate(90deg);top:8px}
-.gds-details summary:hover{color:var(--gds-link-hover)}
-.gds-details summary:hover::before{border-left-color:var(--gds-link-hover)}
-.gds-details summary:focus{background:var(--gds-focus);color:var(--gds-focus-text);box-shadow:0 -2px var(--gds-focus),0 4px var(--gds-focus-text);outline:4px solid transparent;text-decoration:none}
-.gds-details__text{border-left:4px solid var(--gds-border);margin-top:8px;padding:16px;padding-bottom:1px}
-
-/* Inset text */
-.gds-inset-text{border-left:8px solid var(--gds-blue);background:var(--gds-white);padding:24px;margin:0 0 32px}
-.gds-inset-text p:last-child{margin-bottom:0}
-
-/* Warning callout */
-.gds-warning-callout{margin-bottom:32px;background:var(--gds-pale-yellow);border:1px solid var(--gds-yellow)}
-.gds-warning-callout__label{background:var(--gds-yellow);color:var(--gds-text);display:block;padding:8px 24px;margin:0;font-size:22px}
-.gds-warning-callout__content{padding:24px;padding-bottom:8px}
-
-/* Care card (non-urgent) */
-.gds-care-card{margin-bottom:32px}
-.gds-care-card__heading{background:var(--gds-blue);color:var(--gds-white);margin:0;padding:16px 24px;font-size:22px;position:relative}
-.gds-care-card__content{background:var(--gds-white);border:1px solid var(--gds-blue);border-top:0;padding:24px;padding-bottom:8px}
-.gds-care-card__content a{color:var(--gds-link)}
-
-/* Result cards */
-.gds-card{background:var(--gds-white);border:1px solid var(--gds-border);margin-bottom:24px}
-.gds-card__content{padding:24px;padding-bottom:8px}
-.gds-card h3 a{font-size:inherit}
-.gds-tag{display:inline-block;background:#d9e7f4;color:var(--gds-dark-blue);border:1px solid var(--gds-dark-blue);padding:2px 8px;font-size:16px;font-weight:600;margin-bottom:12px}
-.gds-tag--green{background:#dcefe4;color:#00401e;border-color:#00401e}
+/* Details / disclosure */
+details{margin:0 0 22px;font-size:17px}
+summary{color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:4px 0}
+summary:hover{color:var(--accent-dark)}
+summary:focus{background:var(--focus);color:var(--focus-ink);outline:4px solid transparent;box-shadow:0 -2px var(--focus),0 4px var(--focus-ink);text-decoration:none}
+.details-body{padding:12px 0 4px 16px;border-left:4px solid var(--border)}
 
 /* Summary list (check your answers) */
-.gds-summary-list{width:100%;border-collapse:collapse;margin-bottom:32px}
-.gds-summary-list__row{border-bottom:1px solid var(--gds-border)}
-.gds-summary-list__key{font-weight:700;width:45%;padding:12px 16px 12px 0;vertical-align:top;text-align:left}
-.gds-summary-list__value{padding:12px 16px 12px 0;vertical-align:top}
-.gds-summary-list__actions{padding:12px 0;vertical-align:top;text-align:right;white-space:nowrap}
-.gds-summary-list__actions a{cursor:pointer}
+.summary-list{border-top:1px solid var(--border);margin:0 0 28px;padding:0;list-style:none}
+.summary-row{display:flex;flex-wrap:wrap;gap:6px 16px;padding:14px 0;border-bottom:1px solid var(--border)}
+.summary-key{font-weight:600;flex:0 0 190px}
+.summary-val{flex:1 1 200px}
+.summary-act{flex:0 0 auto;text-align:right}
+@media(max-width:520px){.summary-key,.summary-val,.summary-act{flex:1 1 100%;text-align:left}}
 
-/* Footer */
-.gds-footer{border-top:4px solid var(--gds-blue);background:var(--gds-grey-5);padding:24px 0;margin-top:16px;font-size:16px;color:var(--gds-secondary-text)}
-.gds-footer p{margin-bottom:8px}
+/* Result cards */
+.results-group{margin:0 0 36px}
+.results-group__head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.results-group h2{margin-bottom:4px}
+.results-group__intro{color:var(--ink-muted);font-size:17px;margin-bottom:18px}
+.card{
+  background:var(--white);border:1px solid var(--border);border-radius:4px;
+  padding:20px;margin-bottom:16px;box-shadow:var(--shadow);
+}
+.card--done{background:var(--surface-alt);box-shadow:none;opacity:.85}
+.card h3{margin-bottom:10px}
+.card__meta{font-size:16px;color:var(--ink-muted);margin:0 0 12px}
+.card__reasons{margin:0 0 14px;padding-left:20px;font-size:17px}
+.card__route{
+  background:var(--accent-pale);border-left:4px solid var(--accent);border-radius:0 4px 4px 0;
+  padding:12px 14px;font-size:16px;margin:0 0 12px;
+}
+.card__route strong{display:block;margin-bottom:2px}
+.card__actions{display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:16px}
+.tag{
+  display:inline-block;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  padding:3px 9px;border-radius:99px;vertical-align:middle;
+}
+.tag--now{background:var(--success-pale);color:var(--btn-dark)}
+.tag--later{background:var(--surface-alt);color:var(--ink-muted)}
+.tag--done{background:var(--border);color:var(--ink)}
 
-.gds-u-visually-hidden{position:absolute!important;width:1px!important;height:1px!important;margin:0!important;padding:0!important;overflow:hidden!important;clip:rect(0 0 0 0)!important;border:0!important;white-space:nowrap!important}
-[tabindex="-1"]:focus{outline:none}
+/* Notices */
+.notice{background:var(--white);border-left:5px solid var(--accent);padding:16px 18px;margin:0 0 18px;border-radius:0 4px 4px 0}
+.notice h3{font-size:18px;margin-bottom:6px}
+.notice p:last-child,.notice ul:last-child{margin-bottom:0}
+.notice--warn{border-left-color:var(--error)}
+.notice--flat{background:var(--surface-alt);border-left-color:var(--border-strong)}
+
+/* Disclaimer that only appears on the saved PDF, so a kept copy never
+   travels without it. */
+.print-only{display:none}
+@media print{
+  .proto-banner,.site-header,.back-link,.btn,.linkbtn,.no-print{display:none !important}
+  .print-only{display:block !important}
+  body{background:var(--white);font-size:12pt;color:#000}
+  .card{break-inside:avoid;box-shadow:none;border:1px solid #999}
+  .print-disclaimer{border:3px solid #000;padding:12px 14px;margin:0 0 20px;break-inside:avoid}
+  .print-disclaimer h2{font-size:14pt;margin-bottom:6px}
+  .print-disclaimer p{font-size:11pt;margin-bottom:6px}
+  .print-disclaimer p:last-child{margin-bottom:0}
+  a[href^="http"]::after{content:" (" attr(href) ")";font-size:9pt;word-break:break-all}
+}
 </style>
 </head>
 <body>
-<a class="gds-skip-link" href="#maincontent">Skip to main content</a>
+<a class="skip-link" href="#main">Skip to main content</a>
 
 <div class="proto-banner">
-  <div class="gds-width-container"><strong>Unofficial prototype</strong>This is an independent project by a UX designer. It is <strong>not an NHS product, is not affiliated with or endorsed by the NHS</strong>, and does not give medical advice.</div>
+  <div class="container"><strong>Prototype</strong>A design concept only. This is not a real health service and it does not give medical advice.</div>
 </div>
 
-<header class="gds-header" role="banner">
-  <div class="gds-width-container gds-header__inner">
-    <a class="gds-header__logo" href="#" onclick="return App.restart()" aria-label="Homepage" style="width:40px;height:40px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-      <span aria-hidden="true" style="color:#005eb8;font-weight:700;font-size:16px;letter-spacing:-0.5px;font-family:Arial,Helvetica,sans-serif">VC</span>
-    </a>
-    <span class="gds-header__service-name">Vaccination Eligibility Checker <span style="font-weight:400;opacity:.85">(unofficial prototype)</span></span>
+<header class="site-header">
+  <div class="container site-header__inner">
+    <span class="site-header__mark" aria-hidden="true">V</span>
+    <span class="site-header__name">Vaccination triage checker</span>
   </div>
 </header>
 
-<div class="gds-width-container">
-  <main class="gds-main-wrapper" id="maincontent" role="main">
-    <div class="gds-grid-two-thirds" id="app"></div>
-  </main>
-</div>
-
-<footer class="gds-footer" role="contentinfo">
-  <div class="gds-width-container">
-    <p><strong>Not an NHS service.</strong> This is an independent portfolio prototype created by a UX/service designer to demonstrate design and front-end skills. It is not produced, reviewed, endorsed, or affiliated with the NHS in any way.</p>
-    <p>Vaccine information referenced is based on the public guidance at <a href="https://www.nhs.uk/vaccinations/nhs-vaccinations-and-when-to-have-them/" target="_blank" rel="noopener">nhs.uk</a>, checked July 2026 — always confirm with a GP, pharmacist or midwife rather than relying on this tool.</p>
-    <p>Layout patterns are inspired by the open-source gov.uk / NHS.UK design system component libraries, used here for demonstration purposes only.</p>
+<div class="container main-wrapper">
+  <div class="col print-only print-disclaimer">
+    <h2>Important: this is not medical advice</h2>
+    <p>This list was produced by a design prototype, as a demonstration of how eligibility triage could work. It is not a real health service, it is not connected to any vaccination record, and nothing in it should be treated as medical advice.</p>
+    <p>It is based only on a handful of self-reported answers and a simplified version of the routine schedule. It may be incomplete, out of date, or wrong. Do not use it to decide whether to have, or not have, any vaccine.</p>
+    <p>Always speak to a GP, practice nurse, pharmacist or midwife before acting on anything listed here.</p>
   </div>
-</footer>
+  <main id="main" class="col"><div id="app"></div></main>
+  <noscript>
+    <div class="notice notice--warn col">
+      <h3>This prototype needs JavaScript</h3>
+      <p>The eligibility logic runs in the browser. A production version would render each question server-side so it works without JavaScript.</p>
+    </div>
+  </noscript>
+  <footer class="col small muted" style="margin-top:40px;border-top:1px solid var(--border);padding-top:16px">
+    <p>Rules are based on the published UK routine immunisation schedule and are held in an editable data layer, separate from the application logic. Dates and cohort boundaries need clinical sign-off before any real use.</p>
+  </footer>
+</div>
 
 <script>
 "use strict";
-/* =========================================================
-   Content: vaccine catalogue (links to nhs.uk)
-   ========================================================= */
+
+/* ==========================================================================
+   1. CONTENT LAYER
+   Vaccine catalogue, delivery routes and seasonal windows.
+   Everything a content designer or clinical reviewer would edit lives here.
+   Nothing below this section needs changing to update content.
+   ========================================================================== */
+
+const ROUTES = {
+  gp:        {label:"Where to get it", text:"Book through a GP surgery."},
+  gpPharm:   {label:"Where to get it", text:"Available at many pharmacies as well as GP surgeries. A pharmacy is usually quicker."},
+  pharmacy:  {label:"Where to get it", text:"Available at most pharmacies, often without an appointment."},
+  maternity: {label:"Where to get it", text:"Usually offered at a routine maternity appointment. Ask a midwife."},
+  school:    {label:"Where to get it", text:"Normally given by the school immunisation team. If it was missed, a GP surgery can catch up."},
+  childClinic:{label:"Where to get it", text:"Given at routine baby and child appointments, at a GP surgery or child health clinic."},
+  occHealth: {label:"Where to get it", text:"Vaccines needed for work are arranged and paid for by the employer through occupational health. Ask there before a GP surgery."},
+  specialist:{label:"Where to get it", text:"Arranged by a GP surgery, sometimes with a referral to a specialist clinic."}
+};
+
+/* Seasonal windows. months are 0-indexed (0 = January). */
+const SEASONS = {
+  allYear:  {months:[0,1,2,3,4,5,6,7,8,9,10,11], name:"all year"},
+  flu:      {months:[9,10,11,0,1,2], name:"flu season", opensText:"usually early October"},
+  childFlu: {months:[8,9,10,11], name:"the autumn school programme", opensText:"usually early September"},
+  covid:    {months:[3,4,5,9,10,11], name:"spring and autumn campaigns", opensText:"spring and autumn"},
+  rsvAdult: {months:[0,1,2,3,4,5,6,7,8,9,10,11], name:"all year"}
+};
+
 const V = {
-  flu:      {name:"Flu vaccine", url:"https://www.nhs.uk/vaccinations/flu-vaccine/", when:"Every year, usually from October"},
-  pneumo:   {name:"Pneumococcal vaccine", url:"https://www.nhs.uk/vaccinations/pneumococcal-vaccine/", when:"Usually a one-off dose"},
-  shingles: {name:"Shingles vaccine", url:"https://www.nhs.uk/vaccinations/shingles-vaccine/", when:"2 doses"},
-  rsv:      {name:"RSV vaccine", url:"https://www.nhs.uk/vaccinations/rsv-vaccine/", when:"One-off dose"},
-  covid:    {name:"COVID-19 vaccine", url:"https://www.nhs.uk/vaccinations/covid-19-vaccine/", when:"Usually offered in spring and winter"},
-  fluPreg:  {name:"Flu vaccine (in pregnancy)", url:"https://www.nhs.uk/pregnancy/keeping-well/flu-jab/", when:"During flu season, at any stage of pregnancy"},
-  wcough:   {name:"Whooping cough (pertussis) vaccine", url:"https://www.nhs.uk/pregnancy/keeping-well/whooping-cough-vaccination/", when:"From around 20 weeks of pregnancy"},
-  rsvPreg:  {name:"RSV vaccine (in pregnancy)", url:"https://www.nhs.uk/vaccinations/rsv-vaccine/", when:"From 28 weeks of pregnancy"},
-  menacwy:  {name:"MenACWY vaccine", url:"https://www.nhs.uk/vaccinations/menacwy-vaccine/", when:"One-off dose — available from your GP until your 25th birthday"},
-  menb:     {name:"MenB vaccine", url:"https://www.nhs.uk/vaccinations/menb-vaccine-for-children/", when:"From 20 July 2026 for new students aged 24 or under"},
-  mmr:      {name:"MMR vaccine", url:"https://www.nhs.uk/vaccinations/mmr-vaccine/", when:"2 doses — catch up at any age if you missed them"},
-  hpv:      {name:"HPV vaccine", url:"https://www.nhs.uk/vaccinations/hpv-vaccine/", when:"Catch-up available if you missed it at school"},
-  hepb:     {name:"Hepatitis B vaccine", url:"https://www.nhs.uk/vaccinations/hepatitis-b-vaccine/", when:"Course of doses"},
-  hepa:     {name:"Hepatitis A vaccine", url:"https://www.nhs.uk/conditions/hepatitis-a/", when:"Course of doses"},
-  bcg:      {name:"BCG tuberculosis (TB) vaccine", url:"https://www.nhs.uk/vaccinations/bcg-vaccine-for-tuberculosis-tb/", when:"Usually given at around 4 weeks old"},
-  sixin1:   {name:"6-in-1 vaccine", url:"https://www.nhs.uk/vaccinations/6-in-1-vaccine/", when:"At 8, 12 and 16 weeks (4th dose at 18 months for babies born on or after 1 July 2024)"},
-  rota:     {name:"Rotavirus vaccine", url:"https://www.nhs.uk/vaccinations/rotavirus-vaccine/", when:"At 8 and 12 weeks"},
-  mmrv:     {name:"MMRV vaccine", url:"https://www.nhs.uk/vaccinations/mmrv-vaccine/", when:"From 1 year old — doses depend on date of birth"},
-  fourin1:  {name:"4-in-1 pre-school booster", url:"https://www.nhs.uk/vaccinations/4-in-1-preschool-booster-vaccine/", when:"At 3 years 4 months"},
-  childflu: {name:"Children's flu vaccine", url:"https://www.nhs.uk/vaccinations/child-flu-vaccine/", when:"Every year from age 2 until the end of Year 11"},
-  tdipv:    {name:"Td/IPV vaccine (3-in-1 teenage booster)", url:"https://www.nhs.uk/vaccinations/td-ipv-vaccine-3-in-1-teenage-booster/", when:"At 14 (school Year 9)"},
-  hpvTeen:  {name:"HPV vaccine", url:"https://www.nhs.uk/vaccinations/hpv-vaccine/", when:"At 12 to 13 (school Year 8)"},
-  menacwyTeen:{name:"MenACWY vaccine", url:"https://www.nhs.uk/vaccinations/menacwy-vaccine/", when:"At 14 (school Year 9)"},
-  pneumoBaby:{name:"Pneumococcal vaccine", url:"https://www.nhs.uk/vaccinations/pneumococcal-vaccine/", when:"At 16 weeks and 1 year"},
-  menbBaby: {name:"MenB vaccine", url:"https://www.nhs.uk/vaccinations/menb-vaccine-for-children/", when:"At 8 weeks, 12 weeks and 1 year"}
+  flu:        {name:"Flu vaccine", url:"https://www.nhs.uk/vaccinations/flu-vaccine/", when:"Every year", season:"flu", route:"gpPharm"},
+  pneumo:     {name:"Pneumococcal vaccine", url:"https://www.nhs.uk/vaccinations/pneumococcal-vaccine/", when:"1 dose for most adults. Some people at higher risk need extra or regular doses", season:"allYear", route:"gp", oneOff:true},
+  shingles:   {name:"Shingles vaccine", url:"https://www.nhs.uk/vaccinations/shingles-vaccine/", when:"2 doses, 6 to 12 months apart", season:"allYear", route:"gp", oneOff:true},
+  rsv:        {name:"RSV vaccine", url:"https://www.nhs.uk/vaccinations/rsv-vaccine/", when:"One-off dose", season:"rsvAdult", route:"gp", oneOff:true},
+  covid:      {name:"COVID-19 vaccine", url:"https://www.nhs.uk/vaccinations/covid-19-vaccine/", when:"Offered in seasonal campaigns", season:"covid", route:"gpPharm"},
+  fluPreg:    {name:"Flu vaccine in pregnancy", url:"https://www.nhs.uk/pregnancy/keeping-well/flu-jab/", when:"During flu season, at any stage of pregnancy", season:"flu", route:"maternity"},
+  wcough:     {name:"Whooping cough vaccine", url:"https://www.nhs.uk/pregnancy/keeping-well/whooping-cough-vaccination/", when:"From about 20 weeks of pregnancy", season:"allYear", route:"maternity"},
+  rsvPreg:    {name:"RSV vaccine in pregnancy", url:"https://www.nhs.uk/vaccinations/rsv-vaccine/", when:"From 28 weeks of pregnancy", season:"allYear", route:"maternity"},
+  menacwy:    {name:"MenACWY vaccine", url:"https://www.nhs.uk/vaccinations/menacwy-vaccine/", when:"One-off dose. Catch-up available up to the 25th birthday", season:"allYear", route:"gp", oneOff:true},
+  menb:       {name:"MenB vaccine", url:"https://www.nhs.uk/vaccinations/menb-vaccine-for-children/", when:"For new students aged 24 or under", season:"allYear", route:"gp", oneOff:true},
+  mmr:        {name:"MMR vaccine", url:"https://www.nhs.uk/vaccinations/mmr-vaccine/", when:"2 doses. Catch-up at any age", season:"allYear", route:"gp", oneOff:true},
+  hpv:        {name:"HPV vaccine", url:"https://www.nhs.uk/vaccinations/hpv-vaccine/", when:"1 dose under 25. More doses if older or immunosuppressed", season:"allYear", route:"specialist", oneOff:true},
+  hepb:       {name:"Hepatitis B vaccine", url:"https://www.nhs.uk/vaccinations/hepatitis-b-vaccine/", when:"At least 3 doses over a few months", season:"allYear", route:"gp", oneOff:true},
+  hepa:       {name:"Hepatitis A vaccine", url:"https://www.nhs.uk/conditions/hepatitis-a/", when:"1 dose, plus a booster 6 to 12 months later", season:"allYear", route:"gp", oneOff:true},
+  bcg:        {name:"BCG (tuberculosis) vaccine", url:"https://www.nhs.uk/vaccinations/bcg-vaccine-for-tuberculosis-tb/", when:"Usually around 4 weeks old", season:"allYear", route:"specialist", oneOff:true},
+  sixin1:     {name:"6-in-1 vaccine", url:"https://www.nhs.uk/vaccinations/6-in-1-vaccine/", when:"8, 12 and 16 weeks old", season:"allYear", route:"childClinic"},
+  rota:       {name:"Rotavirus vaccine", url:"https://www.nhs.uk/vaccinations/rotavirus-vaccine/", when:"8 and 12 weeks old", season:"allYear", route:"childClinic"},
+  mmrv:       {name:"MMRV vaccine", url:"https://www.nhs.uk/vaccinations/mmrv-vaccine/", when:"From 1 year old", season:"allYear", route:"childClinic"},
+  fourin1:    {name:"4-in-1 pre-school booster", url:"https://www.nhs.uk/vaccinations/4-in-1-preschool-booster-vaccine/", when:"3 years 4 months old", season:"allYear", route:"childClinic"},
+  childflu:   {name:"Children's flu vaccine", url:"https://www.nhs.uk/vaccinations/child-flu-vaccine/", when:"Every year from age 2 to the end of Year 11", season:"childFlu", route:"school"},
+  tdipv:      {name:"Td/IPV teenage booster", url:"https://www.nhs.uk/vaccinations/td-ipv-vaccine-3-in-1-teenage-booster/", when:"School Year 9", season:"allYear", route:"school", oneOff:true},
+  pneumoBaby: {name:"Pneumococcal vaccine (infant)", url:"https://www.nhs.uk/vaccinations/pneumococcal-vaccine/", when:"16 weeks and 1 year old", season:"allYear", route:"childClinic"},
+  menbBaby:   {name:"MenB vaccine (infant)", url:"https://www.nhs.uk/vaccinations/menb-vaccine-for-children/", when:"8 weeks, 12 weeks and 1 year old", season:"allYear", route:"childClinic"}
 };
 
 const CONDITION_OPTS = [
-  {value:"spleen", label:"Problems with the spleen", hint:"For example caused by sickle cell disease or coeliac disease"},
+  {value:"spleen", label:"Problems with the spleen", hint:"For example sickle cell disease, coeliac disease, or the spleen removed"},
   {value:"cochlear", label:"Cochlear implants"},
-  {value:"respheart", label:"A chronic respiratory or heart condition", hint:"For example severe asthma or heart failure"},
-  {value:"neuro", label:"A chronic neurological condition", hint:"For example Parkinson's disease or a learning disability"},
+  {value:"respheart", label:"A long-term breathing or heart condition", hint:"For example asthma needing regular treatment, COPD or heart failure"},
+  {value:"neuro", label:"A long-term neurological condition or learning disability", hint:"For example Parkinson's disease, cerebral palsy or a learning disability"},
   {value:"diabetes", label:"Diabetes"},
-  {value:"kidney", label:"Chronic kidney disease"},
-  {value:"liver", label:"A chronic liver condition"},
-  {value:"haemophilia", label:"Haemophilia"},
-  {value:"complement", label:"A complement disorder", hint:"Or receiving complement inhibitor therapy"},
-  {value:"carehome", label:"I live in a care home for older adults"}
+  {value:"kidney", label:"Long-term kidney disease"},
+  {value:"liver", label:"A long-term liver condition"},
+  {value:"haemophilia", label:"Haemophilia or a clotting disorder"},
+  {value:"complement", label:"A complement disorder", hint:"Or treatment with a complement inhibitor"},
+  {value:"carer", label:"Being an unpaid carer", hint:"For example the main carer for an older or disabled person"},
+  {value:"household", label:"Living with someone who has a weakened immune system"},
+  {value:"carehome", label:"Living in a care home for older adults"},
+  {value:"othercond", label:"Another long-term condition, or not sure", hint:"Choose this if something applies but is not listed, or you are not certain"}
 ];
 
 const CONDITION_RULES = {
-  spleen:     {vaccines:["menacwy","menb","pneumo","flu"], reason:"you have problems with your spleen"},
-  cochlear:   {vaccines:["pneumo"], reason:"you have cochlear implants"},
-  respheart:  {vaccines:["pneumo","flu"], reason:"you have a chronic respiratory or heart condition"},
-  neuro:      {vaccines:["pneumo","flu"], reason:"you have a chronic neurological condition"},
-  diabetes:   {vaccines:["pneumo","flu"], reason:"you have diabetes"},
-  kidney:     {vaccines:["pneumo","flu","hepb"], reason:"you have chronic kidney disease"},
-  liver:      {vaccines:["pneumo","flu","hepa","hepb"], reason:"you have a chronic liver condition"},
-  haemophilia:{vaccines:["hepa","hepb"], reason:"you have haemophilia"},
-  complement: {vaccines:["menacwy","menb","pneumo","flu"], reason:"you have a complement disorder or receive complement inhibitor therapy"},
-  carehome:   {vaccines:["covid","flu"], reason:"you live in a care home for older adults"}
+  spleen:     {vaccines:["menacwy","menb","pneumo","flu"], reason:"problems with the spleen"},
+  cochlear:   {vaccines:["pneumo"], reason:"cochlear implants"},
+  respheart:  {vaccines:["pneumo","flu"], reason:"a long-term breathing or heart condition"},
+  neuro:      {vaccines:["pneumo","flu"], reason:"a long-term neurological condition or learning disability"},
+  diabetes:   {vaccines:["pneumo","flu"], reason:"diabetes"},
+  kidney:     {vaccines:["pneumo","flu","hepb"], reason:"long-term kidney disease"},
+  liver:      {vaccines:["pneumo","flu","hepa","hepb"], reason:"a long-term liver condition"},
+  haemophilia:{vaccines:["hepa","hepb"], reason:"haemophilia or a clotting disorder"},
+  complement: {vaccines:["menacwy","menb","pneumo","flu"], reason:"a complement disorder or complement inhibitor treatment"},
+  carer:      {vaccines:["flu"], reason:"being an unpaid carer"},
+  household:  {vaccines:["flu"], reason:"living with someone who has a weakened immune system"},
+  carehome:   {vaccines:["covid","flu"], reason:"living in a care home for older adults"}
 };
 
-/* =========================================================
-   Screens (one question per page)
-   ========================================================= */
+/* Cohort boundaries pulled out so they can be updated without touching logic. */
+const COHORTS = {
+  shinglesRollingFrom: "2023-09-01",  // turned 65 on or after this date
+  mmrvFrom:            "2025-01-01",  // born on or after this date
+  sixInOneFourthFrom:  "2024-07-01",  // 4th dose for babies born on or after
+  hepBInfantTwelveTo:  "2024-06-30"   // 12-month dose for babies born on or before
+};
+
+/* ==========================================================================
+   2. DATE AND COHORT HELPERS
+   The reason the tool asks for a date of birth rather than an age.
+   ========================================================================== */
+
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function toDate(iso){ const [y,m,d] = iso.split("-").map(Number); return new Date(y, m-1, d); }
+function fmtDate(d){ return d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear(); }
+function isValidDate(y,m,d){
+  if (!Number.isInteger(y)||!Number.isInteger(m)||!Number.isInteger(d)) return false;
+  if (m<1||m>12||d<1||d>31||y<1900) return false;
+  const dt = new Date(y, m-1, d);
+  return dt.getFullYear()===y && dt.getMonth()===m-1 && dt.getDate()===d;
+}
+function ageAt(dob, ref){
+  let a = ref.getFullYear() - dob.getFullYear();
+  const before = ref.getMonth() < dob.getMonth() ||
+    (ref.getMonth() === dob.getMonth() && ref.getDate() < dob.getDate());
+  return before ? a-1 : a;
+}
+function monthsBetween(dob, ref){
+  let m = (ref.getFullYear()-dob.getFullYear())*12 + (ref.getMonth()-dob.getMonth());
+  if (ref.getDate() < dob.getDate()) m--;
+  return m;
+}
+function weeksBetween(dob, ref){ return Math.floor((ref - dob) / 604800000); }
+function addWeeks(d, w){ const n = new Date(d); n.setDate(n.getDate() + w*7); return n; }
+function addMonths(d, mo){ const n = new Date(d); n.setMonth(n.getMonth() + mo); return n; }
+
+/* Academic year in England runs 1 September to 31 August.
+   Year group is determined by age on 31 August before the year starts.
+   Reception = age 4, so Year N = age N+4. */
+function academicStartYear(today){
+  return today.getMonth() >= 8 ? today.getFullYear() : today.getFullYear() - 1;
+}
+function schoolYearGroup(dob, today){
+  const ref = new Date(academicStartYear(today), 7, 31);
+  return ageAt(dob, ref) - 4;
+}
+function schoolYearLabel(yg){
+  if (yg < 0) return "not yet at school";
+  if (yg === 0) return "Reception";
+  if (yg > 13) return "left school";
+  return "Year " + yg;
+}
+function bornOnOrAfter(dob, iso){ return dob >= toDate(iso); }
+function bornOnOrBefore(dob, iso){ return dob <= toDate(iso); }
+function turned65OnOrAfter(dob, iso){
+  const t65 = new Date(dob.getFullYear()+65, dob.getMonth(), dob.getDate());
+  return t65 >= toDate(iso);
+}
+
+/* Seasonal state for a vaccine, given today's date. */
+function seasonState(seasonKey, today){
+  const s = SEASONS[seasonKey] || SEASONS.allYear;
+  const m = today.getMonth();
+  if (s.months.length === 12) return {open:true, always:true, label:"Available all year"};
+  if (s.months.includes(m)) return {open:true, always:false, label:"Available now, during " + s.name};
+  for (let i=1; i<=12; i++){
+    const nm = (m+i) % 12;
+    if (s.months.includes(nm)) return {open:false, always:false, label:"Opens in " + MONTHS[nm], detail:"Offered during " + s.name + ", " + s.opensText + "."};
+  }
+  return {open:true, always:true, label:"Available all year"};
+}
+
+/* ==========================================================================
+   3. RULES LAYER
+   Each rule is data: a condition over the derived context, a vaccine, and a
+   reason. Adding or retiring a rule means editing this array only.
+   ctx.p provides pronouns so one rule serves self, another adult, or a child.
+   ========================================================================== */
+
+const RULES = [
+  /* --- Routine adult, by age --- */
+  {id:"flu-65",      v:"flu",      if:c => c.age>=65, why:c => c.p.Subj+" "+c.p.are+" 65 or over. Offered every year."},
+  {id:"pneumo-65",   v:"pneumo",   if:c => c.age>=65, why:c => c.p.Subj+" "+c.p.are+" 65 or over. Most people need a single dose."},
+  {id:"rsv-75",      v:"rsv",      if:c => c.age>=75 && c.age<=79, why:c => c.p.Subj+" "+c.p.are+" aged 75 to 79."},
+  {id:"covid-75",    v:"covid",    if:c => c.age>=75, why:c => c.p.Subj+" "+c.p.are+" 75 or over."},
+
+  /* --- Shingles: the cohort rule the old version could not answer --- */
+  {id:"shingles-70s", v:"shingles", if:c => c.age>=70 && c.age<=79,
+   why:c => c.p.Subj+" "+c.p.are+" aged 70 to 79."},
+  {id:"shingles-roll", v:"shingles",
+   if:c => c.age>=65 && c.age<70 && turned65OnOrAfter(c.dob, COHORTS.shinglesRollingFrom),
+   why:c => c.p.Subj+" turned 65 on "+fmtDate(new Date(c.dob.getFullYear()+65, c.dob.getMonth(), c.dob.getDate()))+", which is on or after "+fmtDate(toDate(COHORTS.shinglesRollingFrom))+"."},
+  {id:"shingles-immuno", v:"shingles",
+   if:c => c.immuno==="yes" && c.age>=50,
+   why:c => c.p.Subj+" "+c.p.have+" a weakened immune system and "+c.p.are+" 50 or over."},
+
+  /* --- Pregnancy --- */
+  {id:"preg-flu", v:"fluPreg", if:c => c.pregnant,
+   why:c => "Recommended at any stage of pregnancy during flu season."},
+  {id:"preg-wcough-now", v:"wcough", if:c => c.pregnant && c.weeks>=20,
+   why:c => c.p.Subj+" "+c.p.are+" "+c.weeks+" weeks pregnant. This is offered from about 20 weeks, so it can be arranged now."},
+  {id:"preg-wcough-later", v:"wcough", if:c => c.pregnant && c.weeks<20, later:true,
+   why:c => "Offered from about 20 weeks of pregnancy. That is roughly "+(20-c.weeks)+" week"+((20-c.weeks)===1?"":"s")+" away."},
+  {id:"preg-rsv-now", v:"rsvPreg", if:c => c.pregnant && c.weeks>=28,
+   why:c => c.p.Subj+" "+c.p.are+" "+c.weeks+" weeks pregnant. This is offered from 28 weeks."},
+  {id:"preg-rsv-later", v:"rsvPreg", if:c => c.pregnant && c.weeks<28, later:true,
+   why:c => "Offered from 28 weeks of pregnancy. That is roughly "+(28-c.weeks)+" week"+((28-c.weeks)===1?"":"s")+" away."},
+
+  /* --- Weakened immune system --- */
+  {id:"immuno-pneumo", v:"pneumo", if:c => c.immuno==="yes", why:c => c.p.Subj+" "+c.p.have+" a weakened immune system."},
+  {id:"immuno-flu",    v:"flu",    if:c => c.immuno==="yes", why:c => c.p.Subj+" "+c.p.have+" a weakened immune system. Offered every year."},
+  {id:"immuno-covid",  v:"covid",  if:c => c.immuno==="yes", why:c => c.p.Subj+" "+c.p.have+" a weakened immune system."},
+
+  /* --- Occupational --- */
+  {id:"work-flu", v:"flu", if:c => c.work.includes("frontline") || c.work.includes("socialcare"),
+   why:c => "Frontline health or social care work. Offered every year."},
+  {id:"work-covid", v:"covid", if:c => c.work.includes("frontline") || c.work.includes("socialcare"),
+   why:c => "Frontline health or social care work, when a seasonal campaign includes staff."},
+  {id:"work-hepb", v:"hepb", if:c => c.work.includes("frontline"),
+   why:c => "Work that may involve contact with blood or body fluids."},
+  {id:"work-hepb-lab", v:"hepb", if:c => c.work.includes("lab"),
+   why:c => "Handling infectious samples at work."},
+
+  /* --- Starting university or college --- */
+  {id:"uni-menacwy", v:"menacwy", if:c => c.student, why:c => "Starting university or college, where meningitis outbreaks are more common."},
+  {id:"uni-mmr",     v:"mmr",     if:c => c.student, why:c => "Measles and mumps outbreaks happen at universities. Two doses give the best protection."},
+  {id:"uni-hpv",     v:"hpv",     if:c => c.student && c.age<25, why:c => "Catch-up is available if the school dose was missed."},
+  {id:"uni-menb",    v:"menb",    if:c => c.student && c.age<=24, why:c => "New students aged 24 or under can get the MenB vaccine."},
+
+  /* --- Infant schedule, with real dates derived from date of birth --- */
+  {id:"baby-6in1-1", v:"sixin1", if:c => c.ageMonths < 24,
+   why:c => doseLine(c, "1st dose", addWeeks(c.dob,8))},
+  {id:"baby-6in1-2", v:"sixin1", if:c => c.ageMonths < 24,
+   why:c => doseLine(c, "2nd dose", addWeeks(c.dob,12))},
+  {id:"baby-6in1-3", v:"sixin1", if:c => c.ageMonths < 24,
+   why:c => doseLine(c, "3rd dose", addWeeks(c.dob,16))},
+  {id:"baby-6in1-4", v:"sixin1", if:c => c.ageMonths < 30 && bornOnOrAfter(c.dob, COHORTS.sixInOneFourthFrom),
+   why:c => doseLine(c, "4th dose", addMonths(c.dob,18)) + " This dose applies because "+c.p.subj+" "+c.p.was+" born on or after "+fmtDate(toDate(COHORTS.sixInOneFourthFrom))+"."},
+  {id:"baby-rota-1", v:"rota", if:c => c.ageMonths < 8, why:c => doseLine(c, "1st dose", addWeeks(c.dob,8))},
+  {id:"baby-rota-2", v:"rota", if:c => c.ageMonths < 8, why:c => doseLine(c, "2nd dose", addWeeks(c.dob,12))},
+  {id:"baby-menb-1", v:"menbBaby", if:c => c.ageMonths < 18, why:c => doseLine(c, "1st dose", addWeeks(c.dob,8))},
+  {id:"baby-menb-2", v:"menbBaby", if:c => c.ageMonths < 18, why:c => doseLine(c, "2nd dose", addWeeks(c.dob,12))},
+  {id:"baby-menb-3", v:"menbBaby", if:c => c.ageMonths < 18, why:c => doseLine(c, "3rd dose", addMonths(c.dob,12))},
+  {id:"baby-pneumo-1", v:"pneumoBaby", if:c => c.ageMonths < 18, why:c => doseLine(c, "1st dose", addWeeks(c.dob,16))},
+  {id:"baby-pneumo-2", v:"pneumoBaby", if:c => c.ageMonths < 18, why:c => doseLine(c, "2nd dose", addMonths(c.dob,12))},
+  {id:"child-mmrv", v:"mmrv", if:c => c.ageMonths >= 6 && c.ageMonths < 60 && bornOnOrAfter(c.dob, COHORTS.mmrvFrom),
+   why:c => doseLine(c, "1st dose", addMonths(c.dob,12)) + " Dose timing follows the schedule for children born on or after "+fmtDate(toDate(COHORTS.mmrvFrom))+"."},
+  {id:"child-mmr", v:"mmr", if:c => c.ageMonths >= 6 && c.ageMonths < 216 && !bornOnOrAfter(c.dob, COHORTS.mmrvFrom),
+   why:c => c.ageMonths < 66
+     ? doseLine(c, "1st dose", addMonths(c.dob,12)) + " " + doseLine(c, "2nd dose", addMonths(c.dob,40))
+     : "Two doses give the best protection. If either was missed, catch-up is possible at any age. "+c.p.Subj+" "+c.p.are+" in "+schoolYearLabel(c.schoolYear)+"."},
+  {id:"child-4in1", v:"fourin1", if:c => c.ageMonths >= 24 && c.ageMonths < 66,
+   why:c => doseLine(c, "The booster", addMonths(c.dob,40))},
+
+  /* --- School-age, driven by year group rather than an age band --- */
+  {id:"child-flu", v:"childflu", if:c => c.ageMonths >= 24 && c.schoolYear <= 11,
+   why:c => "Offered every year from age 2 until the end of Year 11. " + (c.schoolYear < 0
+     ? c.p.Subj+" "+c.p.are+" not at school yet, so this is usually given at a GP surgery rather than in school."
+     : c.p.Subj+" "+c.p.are+" in "+schoolYearLabel(c.schoolYear)+" this school year.")},
+  {id:"yr8-hpv", v:"hpv", if:c => c.schoolYear >= 8 && c.age < 25,
+   why:c => c.schoolYear===8 ? "Offered in school Year 8, which is this school year."
+     : (c.schoolYear<=13
+        ? "Offered in school Year 8. "+c.p.Subj+" "+c.p.are+" in "+schoolYearLabel(c.schoolYear)+", so if it was missed a catch-up is available up to the 25th birthday."
+        : "Offered in school Year 8. If it was missed, catch-up is available up to the 25th birthday.")},
+  {id:"yr9-tdipv", v:"tdipv", if:c => c.schoolYear >= 9 && c.age < 25,
+   why:c => c.schoolYear===9 ? "Offered in Year 9, which is this school year."
+     : (c.schoolYear<=13
+        ? "Offered in school Year 9. "+c.p.Subj+" "+c.p.are+" in "+schoolYearLabel(c.schoolYear)+", so if it was missed a catch-up is available."
+        : "Offered in school Year 9. If it was missed, a catch-up is still possible.")},
+  {id:"yr9-menacwy", v:"menacwy", if:c => c.schoolYear >= 9 && c.age < 25,
+   why:c => c.schoolYear===9 ? "Offered in Year 9, which is this school year."
+     : "Offered in school Year 9. If it was missed, catch-up is available up to the 25th birthday."},
+
+  /* --- Child risk factors --- */
+  {id:"childrisk-flu", v:"childflu", if:c => c.childRisk.includes("condition") && c.ageMonths>=6,
+   why:c => "A long-term health condition. The flu vaccine is offered every year from 6 months to 17 years."},
+  {id:"childrisk-covid", v:"covid", if:c => c.childRisk.includes("immuno") && c.ageMonths>=6,
+   why:c => "A weakened immune system, from 6 months old."},
+  {id:"childrisk-hepb", v:"hepb", if:c => c.childRisk.includes("hepbmum") && c.ageMonths<24,
+   why:c => {
+     const base = "The mother has hepatitis B. Doses are given at birth and 4 weeks old.";
+     return bornOnOrBefore(c.dob, COHORTS.hepBInfantTwelveTo)
+       ? base + " A further dose at 12 months applies for babies born on or before "+fmtDate(toDate(COHORTS.hepBInfantTwelveTo))+"."
+       : base;
+   }},
+  {id:"childrisk-tb", v:"bcg", if:c => c.childRisk.includes("tb") && c.age < 16,
+   why:c => "A higher risk of TB. Usually given around 4 weeks old, but older children can still be assessed."}
+];
+
+/* Turns a scheduled dose into a dated, past/future aware line. */
+function doseLine(c, label, due){
+  const today = c.today;
+  const diffDays = Math.round((due - today) / 86400000);
+  if (diffDays < -14) return label + " was due on " + fmtDate(due) + ". If it was missed, it can still be caught up.";
+  if (diffDays < 0)   return label + " was due on " + fmtDate(due) + ", just recently.";
+  if (diffDays === 0) return label + " is due today, " + fmtDate(due) + ".";
+  if (diffDays <= 28) return label + " is due on " + fmtDate(due) + ", in about " + Math.max(1, Math.round(diffDays/7)) + " week" + (Math.round(diffDays/7)===1?"":"s") + ".";
+  return label + " is due on " + fmtDate(due) + ".";
+}
+
+/* Notes are advisory blocks that are not tied to a single vaccine. */
+const NOTES = [
+  {id:"immuno-unsure", if:c => c.immuno==="notsure",
+   title:"Not sure about the immune system question?",
+   html:"A GP surgery can check records and confirm. If it does apply, the pneumococcal, flu, COVID-19 and shingles vaccines may all be offered."},
+  {id:"other-cond", if:c => c.conditions.includes("othercond"),
+   title:"Another condition, or not sure",
+   html:"This checker only covers a short list of common conditions. Plenty of other conditions and treatments qualify for extra vaccines. Ask a GP surgery or pharmacist to check the full record."},
+  {id:"work-note", if:c => c.work.length>0,
+   title:"Vaccines needed for work",
+   html:"These are normally arranged and paid for by an employer through occupational health, rather than by a GP surgery. Ask at work first."},
+  {id:"under25", if:c => c.age>=16 && c.age<25 && !c.student,
+   title:"Catch-up under 25",
+   html:"MenACWY catch-up is available up to the 25th birthday, and MMR catch-up at any age, if either was missed at school."},
+  {id:"redbook", if:c => c.age < 6,
+   title:"Check the personal child health record",
+   html:"The red book, or the GP surgery record, is the reliable source for which doses have already been given. This checker only shows what the routine schedule expects."},
+  {id:"travel", if:c => true,
+   title:"Travel vaccines are not covered",
+   html:"Which travel vaccines are needed depends on the destination, and they are handled separately. A travel health clinic or pharmacy can advise."}
+];
+
+/* ==========================================================================
+   4. QUESTION FLOW
+   One question per page. Branching reads from derived facts, so the date of
+   birth alone decides the adult, teenage or infant path.
+   ========================================================================== */
+
+function derivedAge(a){
+  if (!a.dob) return null;
+  return ageAt(toDate(a.dob), new Date());
+}
+
 const SCREENS = {
   who: {
-    type:"radios", legend:"Who do you want to check vaccinations for?",
-    name:"who", error:"Select who you want to check vaccinations for",
+    type:"radios", legend:"Who are you checking for?",
+    name:"who", error:"Select who you are checking for",
     options:[
       {value:"self", label:"Myself"},
-      {value:"child", label:"A child under 16", hint:"Check their routine childhood vaccination schedule"}
+      {value:"adult", label:"Another adult", hint:"For example a parent or someone you care for"},
+      {value:"child", label:"A child or young person"}
     ],
-    next: a => a.who === "child" ? "childAge" : "age"
+    next: () => "dob"
   },
-  age: {
-    type:"number", legend:"How old are you?",
-    name:"age", label:"Age in years", suffix:"years",
-    hint:"Your age decides which routine NHS vaccinations you're offered.",
-    min:16, max:120,
-    errors:{empty:"Enter your age", range:"Enter an age between 16 and 120"},
-    next: () => "pregnancy"
+  dob: {
+    type:"date", legend:"What is their date of birth?",
+    legendSelf:"What is your date of birth?",
+    name:"dob",
+    hint:"Date of birth decides which vaccines are due, which school year applies, and which schedule was in place at birth. For example, 12 3 1958.",
+    next: a => {
+      const age = derivedAge(a);
+      if (age < 16) return "childRisk";
+      return "pregnancy";
+    }
   },
   pregnancy: {
-    type:"radios", legend:"Are you pregnant?",
-    name:"pregnancy", error:"Select yes if you are pregnant",
-    hint:"Select 'No' if this does not apply to you.",
-    options:[{value:"yes", label:"Yes"},{value:"no", label:"No"}],
+    type:"radios", legend:"Are they pregnant?",
+    legendSelf:"Are you pregnant?",
+    name:"pregnancy", error:"Select yes, no, or not sure",
+    hint:"Some vaccines are offered in pregnancy to protect the baby.",
+    options:[{value:"yes", label:"Yes"},{value:"no", label:"No"},{value:"notsure", label:"Not sure, or prefer not to say"}],
     next: a => a.pregnancy === "yes" ? "weeks" : "immuno"
   },
   weeks: {
-    type:"number", legend:"How many weeks pregnant are you?",
+    type:"number", legend:"How many weeks pregnant?",
     name:"weeks", label:"Weeks", suffix:"weeks",
-    hint:"An estimate is fine. Some vaccines in pregnancy are offered from a certain week.",
+    hint:"An estimate is fine. Two of the vaccines in pregnancy start at a particular week.",
     min:1, max:42,
-    errors:{empty:"Enter how many weeks pregnant you are", range:"Enter a number of weeks between 1 and 42"},
+    errors:{empty:"Enter how many weeks pregnant", range:"Enter a number of weeks between 1 and 42"},
     next: () => "immuno"
   },
   immuno: {
-    type:"radios", legend:"Do you have a weakened immune system?",
-    name:"immuno", error:"Select yes, no or not sure",
+    type:"radios", legend:"Do they have a weakened immune system?",
+    legendSelf:"Do you have a weakened immune system?",
+    name:"immuno", error:"Select yes, no, or not sure",
     details:{
-      summary:"What does having a weakened immune system (immunosuppressed) mean?",
-      html:"<p>Being immunosuppressed means your body's defence against infection is weaker than normal, so infections can affect you more seriously. It can be caused by:</p><ul><li><strong>a health condition</strong> — such as HIV, some blood cancers like leukaemia or lymphoma, or having your spleen removed</li><li><strong>a treatment</strong> — such as chemotherapy or radiotherapy, long-term steroid tablets, biologic medicines (for example for rheumatoid arthritis or Crohn's disease), or medicines taken after an organ transplant</li></ul><p>If you're not sure, choose 'Not sure' — your GP surgery can tell you.</p>"
+      summary:"What counts as a weakened immune system?",
+      html:"<p>It means the body's defence against infection is weaker than usual, so infections can be more serious. It can be caused by:</p><ul><li>a health condition, such as HIV, some blood cancers, or having the spleen removed</li><li>a treatment, such as chemotherapy or radiotherapy, long-term steroid tablets, biologic medicines, or medicines taken after a transplant</li></ul><p>If you are not certain, choose \"Not sure\". A GP surgery can confirm.</p>"
     },
     options:[
       {value:"yes", label:"Yes"},
@@ -334,171 +645,350 @@ const SCREENS = {
     next: () => "conditions"
   },
   conditions: {
-    type:"checkboxes", legend:"Do any of these apply to you?",
-    name:"conditions", error:"Select the conditions that apply to you, or select 'No, none of these'",
-    hint:"Some vaccines are offered on the NHS to people who need extra protection. Select all that apply.",
+    type:"checkboxes", legend:"Do any of these apply to them?",
+    legendSelf:"Do any of these apply to you?",
+    name:"conditions", error:"Select any that apply, or select \"None of these\"",
+    hint:"Some vaccines are offered to people who need extra protection. Select all that apply. If in doubt, select it.",
     options: CONDITION_OPTS,
-    noneOption:{value:"none", label:"No, none of these"},
+    noneOption:{value:"none", label:"None of these"},
     next: () => "work"
   },
   work: {
-    type:"checkboxes", legend:"Does your work involve any of these?",
-    name:"work", error:"Select the types of work that apply to you, or select 'No, none of these'",
-    hint:"Some vaccinations are recommended for certain jobs. These are usually arranged through your employer's occupational health service. Select all that apply.",
+    type:"checkboxes", legend:"Does their work involve any of these?",
+    legendSelf:"Does your work involve any of these?",
+    name:"work", error:"Select any that apply, or select \"None of these\"",
+    hint:"Some vaccines are recommended for particular jobs and are usually arranged through an employer.",
     options:[
-      {value:"frontline", label:"Frontline health care", hint:"For example NHS staff with patient contact"},
-      {value:"socialcare", label:"Social care or care home work", hint:"Direct contact with people you care for"},
+      {value:"frontline", label:"Frontline health care", hint:"Direct contact with patients"},
+      {value:"socialcare", label:"Social care or care home work"},
       {value:"lab", label:"Laboratory work handling infectious samples"}
     ],
-    noneOption:{value:"none", label:"No, none of these"},
-    next: a => (Number(a.age) <= 24 ? "student" : "check")
+    noneOption:{value:"none", label:"None of these"},
+    next: a => {
+      const age = derivedAge(a);
+      return (age >= 16 && age <= 25) ? "student" : "check";
+    }
   },
   student: {
-    type:"radios", legend:"Are you starting university or college for the first time?",
-    name:"student", error:"Select yes if you are starting university or college for the first time",
-    hint:"Outbreaks of meningitis, mumps and measles are more common at universities and colleges.",
+    type:"radios", legend:"Are they starting university or college for the first time?",
+    legendSelf:"Are you starting university or college for the first time?",
+    name:"student", error:"Select yes or no",
+    hint:"Meningitis, measles and mumps outbreaks are more common in shared student accommodation.",
     options:[{value:"yes", label:"Yes"},{value:"no", label:"No"}],
     next: () => "check"
   },
-  childAge: {
-    type:"radios", legend:"How old is the child?",
-    name:"childAge", error:"Select the child's age",
-    options:[
-      {value:"baby", label:"Under 1 year"},
-      {value:"toddler", label:"1 to 3 years"},
-      {value:"primary", label:"4 to 11 years"},
-      {value:"yr8", label:"12 to 13 years"},
-      {value:"teen", label:"14 to 15 years"}
-    ],
-    next: () => "childRisk"
-  },
   childRisk: {
-    type:"checkboxes", legend:"Do any of these apply to the child?",
-    name:"childRisk", error:"Select what applies to the child, or select 'No, none of these'",
-    hint:"Some children need extra protection. Select all that apply.",
+    type:"checkboxes", legend:"Do any of these apply to them?",
+    name:"childRisk", error:"Select any that apply, or select \"None of these\"",
+    hint:"Some children are offered extra vaccines. Select all that apply.",
     options:[
-      {value:"condition", label:"They have a long-term health condition", hint:"For example asthma needing regular treatment, diabetes or a heart condition"},
-      {value:"immuno", label:"They have a weakened immune system", hint:"Caused by a health condition or treatment such as chemotherapy"},
-      {value:"hepbmum", label:"Their mother has hepatitis B", hint:"Applies to babies"},
-      {value:"tb", label:"They live in an area with high rates of TB, or have a parent or grandparent born in a country with many TB cases"}
+      {value:"condition", label:"A long-term health condition", hint:"For example asthma needing regular treatment, diabetes or a heart condition"},
+      {value:"immuno", label:"A weakened immune system", hint:"Caused by a condition or a treatment such as chemotherapy"},
+      {value:"hepbmum", label:"Their mother has hepatitis B", showIf: a => derivedAge(a) < 2},
+      {value:"tb", label:"A higher risk of TB", hint:"Living in an area with high rates, or a parent or grandparent born in a country with many TB cases"}
     ],
-    noneOption:{value:"none", label:"No, none of these"},
+    noneOption:{value:"none", label:"None of these"},
     next: () => "check"
   }
 };
 
+const FLOW_START = "who";
+
 const QUESTION_LABELS = {
-  who:"Checking for", age:"Age", pregnancy:"Pregnant", weeks:"Weeks pregnant",
-  immuno:"Weakened immune system", conditions:"Health conditions", work:"Work",
-  student:"Starting university or college", childAge:"Child's age", childRisk:"Applies to the child"
+  who:"Checking for", dob:"Date of birth", pregnancy:"Pregnant", weeks:"Weeks pregnant",
+  immuno:"Weakened immune system", conditions:"Conditions and circumstances", work:"Work",
+  student:"Starting university or college", childRisk:"Applies to them"
 };
 
-/* =========================================================
-   App engine
-   ========================================================= */
+/* ==========================================================================
+   5. CONTEXT BUILDER
+   Turns raw answers into the derived facts the rules read.
+   ========================================================================== */
+
+const PRONOUNS = {
+  self:  {subj:"you",  Subj:"You",  are:"are",  have:"have", was:"were", poss:"your",  Poss:"Your"},
+  other: {subj:"they", Subj:"They", are:"are",  have:"have", was:"were", poss:"their", Poss:"Their"}
+};
+
+function buildContext(answers, today){
+  const dob = toDate(answers.dob);
+  const isSelf = answers.who === "self";
+  return {
+    today,
+    dob,
+    isSelf,
+    p: isSelf ? PRONOUNS.self : PRONOUNS.other,
+    age: ageAt(dob, today),
+    ageMonths: monthsBetween(dob, today),
+    ageWeeks: weeksBetween(dob, today),
+    schoolYear: schoolYearGroup(dob, today),
+    pregnant: answers.pregnancy === "yes",
+    weeks: Number(answers.weeks) || 0,
+    immuno: answers.immuno || "no",
+    conditions: (answers.conditions || []).filter(x => x !== "none"),
+    work: (answers.work || []).filter(x => x !== "none"),
+    student: answers.student === "yes",
+    childRisk: (answers.childRisk || []).filter(x => x !== "none")
+  };
+}
+
+/* Runs the rules. Returns a map of vaccine -> {reasons, later}. */
+function evaluate(ctx){
+  const recs = new Map();
+  const add = (key, reason, later) => {
+    if (!V[key]) return;
+    if (!recs.has(key)) recs.set(key, {reasons:[], later:true});
+    const e = recs.get(key);
+    if (reason && !e.reasons.includes(reason)) e.reasons.push(reason);
+    if (!later) e.later = false;
+  };
+  RULES.forEach(r => {
+    let ok = false;
+    try { ok = !!r.if(ctx); } catch(e){ ok = false; }
+    if (ok) add(r.v, r.why(ctx), !!r.later);
+  });
+  ctx.conditions.forEach(c => {
+    const rule = CONDITION_RULES[c];
+    if (!rule) return;
+    rule.vaccines.forEach(v => add(v, capitalise(rule.reason) + "."));
+  });
+  const notes = NOTES.filter(n => { try { return !!n.if(ctx); } catch(e){ return false; } });
+  return {recs, notes};
+}
+
+function capitalise(s){ return s.charAt(0).toUpperCase() + s.slice(1); }
+
+/* ==========================================================================
+   6. URL STATE
+   Answers live in the URL hash, so every question has its own address and a
+   result can be bookmarked and the browser back button works. Nothing is
+   stored or sent anywhere.
+   ========================================================================== */
+
+const ARRAY_KEYS = ["conditions","work","childRisk","had"];
+
+function encodeState(screen, answers, had){
+  const parts = ["s=" + screen];
+  Object.keys(answers).forEach(k => {
+    const val = answers[k];
+    if (val === undefined || val === null || val === "") return;
+    parts.push(k + "=" + (Array.isArray(val) ? val.join(",") : String(val)));
+  });
+  if (had && had.length) parts.push("had=" + had.join(","));
+  return "#" + parts.join("~");
+}
+
+function decodeState(hash){
+  const out = {screen:"start", answers:{}, had:[]};
+  const raw = (hash || "").replace(/^#/, "");
+  if (!raw) return out;
+  raw.split("~").forEach(pair => {
+    const i = pair.indexOf("=");
+    if (i < 0) return;
+    const k = decodeURIComponent(pair.slice(0, i));
+    const v = decodeURIComponent(pair.slice(i+1));
+    if (k === "s") out.screen = v;
+    else if (k === "had") out.had = v ? v.split(",") : [];
+    else if (ARRAY_KEYS.includes(k)) out.answers[k] = v ? v.split(",") : [];
+    else out.answers[k] = v;
+  });
+  return out;
+}
+
+/* ==========================================================================
+   7. APPLICATION
+   ========================================================================== */
+
 const App = (() => {
   let answers = {};
-  let trail = [];       // visited screen ids, in order
-  let current = "who";
+  let had = [];
+  let current = "start";
   let fromCheck = false;
+  let suppressHash = false;
+
   const el = () => document.getElementById("app");
+  const TITLE = "Vaccination triage checker";
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[c]));
 
-  function restart(){ answers = {}; trail = []; current = "who"; fromCheck = false; render(true); return false; }
+  function setTitle(page, isError){
+    document.title = (isError ? "Error: " : "") + (page ? page + " - " : "") + TITLE;
+  }
 
-  function displayAnswer(id){
-    const s = SCREENS[id], v = answers[s.name];
-    if (v === undefined) return "";
-    if (s.type === "number") return v + (s.suffix ? " " + s.suffix : "");
-    if (s.type === "checkboxes"){
-      if (v.includes("none")) return "None of these";
-      const all = s.options.concat(s.noneOption ? [s.noneOption] : []);
-      return v.map(x => (all.find(o => o.value === x) || {label:x}).label).join("; ");
+  /* ---------- routing ---------- */
+  function syncHash(){
+    suppressHash = true;
+    location.hash = encodeState(current, answers, had);
+    setTimeout(() => { suppressHash = false; }, 0);
+  }
+  function goTo(screen){
+    current = screen;
+    syncHash();
+    renderScreen(screen);
+  }
+  function onHashChange(){
+    if (suppressHash) return;
+    const st = decodeState(location.hash);
+    answers = st.answers;
+    had = st.had;
+    current = st.screen;
+    renderScreen(current);
+  }
+  function renderScreen(screen){
+    if (screen === "start") return renderStart();
+    if (screen === "check") return renderCheck();
+    if (screen === "results") return renderResults();
+    if (!SCREENS[screen]) return renderStart();
+    if (screen !== FLOW_START && !answers.dob && screen !== "dob") return renderStart();
+    renderQuestion(screen);
+  }
+
+  /* ---------- derived helpers ---------- */
+  function trailOrder(){
+    const order = [];
+    let cur = FLOW_START;
+    let guard = 0;
+    while (cur && cur !== "check" && SCREENS[cur] && guard++ < 30){
+      if (answers[SCREENS[cur].name] === undefined) break;
+      order.push(cur);
+      cur = SCREENS[cur].next(answers);
     }
-    return (s.options.find(o => o.value === v) || {label:v}).label;
+    return order;
+  }
+  function visibleOptions(s){
+    return (s.options || []).filter(o => !o.showIf || o.showIf(answers));
+  }
+  function legendFor(s){
+    return (answers.who === "self" && s.legendSelf) ? s.legendSelf : s.legend;
   }
 
-  function esc(t){ return String(t).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
-
-  /* ---------- rendering ---------- */
-  function backLink(){
-    return (trail.length || fromCheck)
-      ? '<div class="gds-back-link"><a href="#" onclick="return App.back()">Go back</a></div>' : "";
+  /* ---------- rendering: shared bits ---------- */
+  function backLink(label){
+    return '<p class="back-link"><a href="#" onclick="return App.back()">' + esc(label || "Back") + '</a></p>';
   }
-
   function errorSummary(msg, target){
-    return `<div class="gds-error-summary" role="alert" tabindex="-1" id="error-summary">
-      <h2>There is a problem</h2>
-      <p><a href="#${target}">${esc(msg)}</a></p></div>`;
+    return '<div class="error-summary" id="error-summary" tabindex="-1" role="alert">' +
+      '<h2>There is a problem</h2><ul><li><a href="#' + esc(target) + '" onclick="document.getElementById(\'' + esc(target) + '\').focus();return false">' +
+      esc(msg) + '</a></li></ul></div>';
   }
-
-  function detailsBlock(d){
-    return d ? `<details class="gds-details"><summary>${esc(d.summary)}</summary>
-      <div class="gds-details__text">${d.html}</div></details>` : "";
-  }
-
-  function renderQuestion(id, error){
-    const s = SCREENS[id];
-    let inner = "";
-    if (s.type === "radios" || s.type === "checkboxes"){
-      const cls = s.type === "radios" ? "radios" : "checkboxes";
-      const opts = s.options.map((o,i) => {
-        const iid = `${s.name}-${i}`;
-        const val = answers[s.name];
-        const checked = s.type === "radios" ? val === o.value : Array.isArray(val) && val.includes(o.value);
-        return `<div class="gds-${cls}__item">
-          <input class="gds-${cls}__input" id="${iid}" name="${s.name}" type="${s.type === "radios" ? "radio" : "checkbox"}" value="${o.value}" ${checked ? "checked" : ""} ${s.type === "checkboxes" ? 'onchange="App.uncheckNone(this)"' : ""}>
-          <label class="gds-${cls}__label" for="${iid}">${esc(o.label)}${o.hint ? `<span class="gds-radios__hint">${esc(o.hint)}</span>` : ""}</label>
-        </div>`;
-      }).join("");
-      const none = s.noneOption ? `<div class="gds-checkboxes__divider">or</div>
-        <div class="gds-${cls}__item">
-          <input class="gds-${cls}__input" id="${s.name}-none" name="${s.name}" type="checkbox" value="none" ${Array.isArray(answers[s.name]) && answers[s.name].includes("none") ? "checked" : ""} onchange="App.checkNone(this)">
-          <label class="gds-${cls}__label" for="${s.name}-none">${esc(s.noneOption.label)}</label>
-        </div>` : "";
-      inner = `<fieldset class="gds-fieldset" aria-describedby="${s.hint ? "q-hint" : ""} ${error ? "q-error" : ""}">
-        <legend class="gds-fieldset__legend"><h1 tabindex="-1" id="page-heading">${esc(s.legend)}</h1></legend>
-        ${s.hint ? `<p class="gds-hint" id="q-hint">${esc(s.hint)}</p>` : ""}
-        ${detailsBlock(s.details)}
-        ${error ? `<span class="gds-error-message" id="q-error"><span class="gds-u-visually-hidden">Error:</span> ${esc(error)}</span>` : ""}
-        ${opts}${none}
-      </fieldset>`;
-    } else if (s.type === "number"){
-      inner = `<h1 tabindex="-1" id="page-heading"><label for="${s.name}-0">${esc(s.legend)}</label></h1>
-        ${s.hint ? `<p class="gds-hint" id="q-hint">${esc(s.hint)}</p>` : ""}
-        ${detailsBlock(s.details)}
-        ${error ? `<span class="gds-error-message" id="q-error"><span class="gds-u-visually-hidden">Error:</span> ${esc(error)}</span>` : ""}
-        <input class="gds-input gds-input--width-4 ${error ? "gds-input--error" : ""}" id="${s.name}-0" name="${s.name}" type="text" inputmode="numeric" pattern="[0-9]*" value="${answers[s.name] !== undefined ? esc(answers[s.name]) : ""}" aria-describedby="${s.hint ? "q-hint" : ""} ${error ? "q-error" : ""}">`;
-    }
-    el().innerHTML = `${backLink()}
-      ${error ? errorSummary(error, s.name + "-0") : ""}
-      <form onsubmit="return App.submit('${id}')" novalidate>
-        <div class="gds-form-group ${error ? "gds-form-group--error" : ""}">${inner}</div>
-        <button class="gds-button" type="submit">Continue</button>
-      </form>`;
-    focusStart(error);
-  }
-
   function focusStart(error){
     window.scrollTo(0,0);
     const t = error ? document.getElementById("error-summary") : document.getElementById("page-heading");
     if (t) t.focus();
   }
 
-  /* ---------- validation + navigation ---------- */
+  /* ---------- rendering: questions ---------- */
+  function renderQuestion(id, error){
+    const s = SCREENS[id];
+    setTitle(legendFor(s), !!error);
+    const prev = answers[s.name];
+    let inner = "";
+
+    if (s.type === "radios" || s.type === "checkboxes"){
+      const isRadio = s.type === "radios";
+      const opts = visibleOptions(s);
+      const rows = opts.map((o, i) => {
+        const oid = s.name + "-" + i;
+        const checked = isRadio ? (prev === o.value) : (Array.isArray(prev) && prev.includes(o.value));
+        const handler = isRadio ? "" : ' onchange="App.uncheckNone(this)"';
+        return '<div class="option option--' + (isRadio ? "radio" : "check") + '">' +
+          '<input type="' + (isRadio ? "radio" : "checkbox") + '" id="' + oid + '" name="' + s.name + '" value="' + esc(o.value) + '"' +
+          (checked ? " checked" : "") + (o.hint ? ' aria-describedby="' + oid + '-hint"' : "") + handler + '>' +
+          '<label for="' + oid + '">' + esc(o.label) +
+          (o.hint ? '<span class="option-hint" id="' + oid + '-hint">' + esc(o.hint) + '</span>' : "") +
+          '</label></div>';
+      }).join("");
+      const none = s.noneOption ? '<p class="option-divider">or</p><div class="option option--check">' +
+        '<input type="checkbox" id="' + s.name + '-none" name="' + s.name + '" value="' + esc(s.noneOption.value) + '"' +
+        (Array.isArray(prev) && prev.includes(s.noneOption.value) ? " checked" : "") + ' onchange="App.checkNone(this)">' +
+        '<label for="' + s.name + '-none">' + esc(s.noneOption.label) + '</label></div>' : "";
+      inner = '<fieldset' + (s.hint || error ? ' aria-describedby="' + s.name + '-hint"' : "") + '>' +
+        '<legend><span class="legend-h1" id="page-heading" tabindex="-1" role="heading" aria-level="1">' + esc(legendFor(s)) + '</span></legend>' +
+        (s.hint ? '<p class="hint" id="' + s.name + '-hint">' + esc(s.hint) + '</p>' : "") +
+        (s.details ? '<details><summary>' + esc(s.details.summary) + '</summary><div class="details-body">' + s.details.html + '</div></details>' : "") +
+        (error ? '<span class="error-message">' + esc(error) + '</span>' : "") +
+        '<div' + (error ? ' class="form-group--error"' : "") + '>' + rows + none + '</div></fieldset>';
+    }
+
+    if (s.type === "number"){
+      inner = '<h1 id="page-heading" tabindex="-1">' + esc(legendFor(s)) + '</h1>' +
+        (s.hint ? '<p class="hint" id="' + s.name + '-hint">' + esc(s.hint) + '</p>' : "") +
+        (error ? '<span class="error-message">' + esc(error) + '</span>' : "") +
+        '<div' + (error ? ' class="form-group--error"' : "") + '>' +
+        '<label class="field-label" for="' + s.name + '-0">' + esc(s.label) + '</label>' +
+        '<input class="input' + (error ? " input--error" : "") + '" id="' + s.name + '-0" name="' + s.name + '" type="text" inputmode="numeric" ' +
+        'style="max-width:120px" value="' + (prev !== undefined ? esc(prev) : "") + '"' +
+        (s.hint ? ' aria-describedby="' + s.name + '-hint"' : "") + '></div>';
+    }
+
+    if (s.type === "date"){
+      const parts = prev ? prev.split("-") : ["","",""];
+      const dv = parts[2] || "", mv = parts[1] || "", yv = parts[0] || "";
+      inner = '<fieldset role="group" aria-describedby="' + s.name + '-hint">' +
+        '<legend><span class="legend-h1" id="page-heading" tabindex="-1" role="heading" aria-level="1">' + esc(legendFor(s)) + '</span></legend>' +
+        '<p class="hint" id="' + s.name + '-hint">' + esc(s.hint) + '</p>' +
+        (error ? '<span class="error-message">' + esc(error) + '</span>' : "") +
+        '<div' + (error ? ' class="form-group--error"' : "") + '><div class="date-parts">' +
+        '<div class="date-part"><label for="dob-0">Day</label><input class="input' + (error ? " input--error" : "") + '" id="dob-0" type="text" inputmode="numeric" autocomplete="bday-day" value="' + esc(dv) + '"></div>' +
+        '<div class="date-part"><label for="dob-1">Month</label><input class="input' + (error ? " input--error" : "") + '" id="dob-1" type="text" inputmode="numeric" autocomplete="bday-month" value="' + esc(mv) + '"></div>' +
+        '<div class="date-part date-part--year"><label for="dob-2">Year</label><input class="input' + (error ? " input--error" : "") + '" id="dob-2" type="text" inputmode="numeric" autocomplete="bday-year" value="' + esc(yv) + '"></div>' +
+        '</div></div></fieldset>';
+    }
+
+    el().innerHTML = backLink() +
+      (error ? errorSummary(error, s.type === "date" ? "dob-0" : s.name + "-0") : "") +
+      '<form onsubmit="return App.submit(\'' + id + '\')" novalidate>' + inner +
+      '<button class="btn" type="submit">Continue</button></form>';
+    focusStart(error);
+  }
+
+  /* ---------- validation ---------- */
   function validate(s){
     if (s.type === "radios"){
-      const v = document.querySelector(`input[name="${s.name}"]:checked`);
+      const v = document.querySelector('input[name="' + s.name + '"]:checked');
       return v ? {value:v.value} : {error:s.error};
     }
     if (s.type === "checkboxes"){
-      const v = [...document.querySelectorAll(`input[name="${s.name}"]:checked`)].map(i => i.value);
+      const v = [].slice.call(document.querySelectorAll('input[name="' + s.name + '"]:checked')).map(i => i.value);
       return v.length ? {value:v} : {error:s.error};
+    }
+    if (s.type === "date"){
+      const d = document.getElementById("dob-0").value.trim();
+      const m = document.getElementById("dob-1").value.trim();
+      const y = document.getElementById("dob-2").value.trim();
+      if (!d && !m && !y) return {error:"Enter a date of birth"};
+      if (!d || !m || !y) return {error:"Enter a complete date of birth, including day, month and year"};
+      if (!/^\d{1,2}$/.test(d) || !/^\d{1,2}$/.test(m) || !/^\d{4}$/.test(y)) return {error:"Enter a date of birth using numbers, with a 4 digit year"};
+      const dn = Number(d), mn = Number(m), yn = Number(y);
+      if (!isValidDate(yn, mn, dn)) return {error:"Enter a real date of birth"};
+      const dt = new Date(yn, mn-1, dn);
+      const today = new Date();
+      if (dt > today) return {error:"Date of birth must be in the past"};
+      if (ageAt(dt, today) > 120) return {error:"Enter a date of birth within the last 120 years"};
+      return {value: yn + "-" + String(mn).padStart(2,"0") + "-" + String(dn).padStart(2,"0")};
     }
     const raw = document.getElementById(s.name + "-0").value.trim();
     if (!raw) return {error:s.errors.empty};
+    if (!/^\d+$/.test(raw)) return {error:s.errors.range};
     const n = Number(raw);
-    if (!Number.isFinite(n) || n < s.min || n > s.max || !/^\d+$/.test(raw)) return {error:s.errors.range};
+    if (n < s.min || n > s.max) return {error:s.errors.range};
     return {value:n};
+  }
+
+  /* Drops answers that are no longer reachable or no longer valid options. */
+  function prune(){
+    Object.keys(SCREENS).forEach(id => {
+      const s = SCREENS[id];
+      if (s.type === "checkboxes" && Array.isArray(answers[s.name])){
+        const valid = visibleOptions(s).map(o => o.value).concat(s.noneOption ? [s.noneOption.value] : []);
+        const kept = answers[s.name].filter(x => valid.indexOf(x) > -1);
+        if (kept.length) answers[s.name] = kept; else delete answers[s.name];
+      }
+    });
+    const reachable = {};
+    trailOrder().forEach(id => { reachable[id] = true; });
+    Object.keys(SCREENS).forEach(id => {
+      if (!reachable[id]) delete answers[SCREENS[id].name];
+    });
   }
 
   function submit(id){
@@ -506,235 +996,207 @@ const App = (() => {
     const r = validate(s);
     if (r.error){ renderQuestion(id, r.error); return false; }
     answers[s.name] = r.value;
-    trail.push(id);
+    prune();
     const next = s.next(answers);
-    if (fromCheck && next !== "check" && answers[SCREENS[next].name] !== undefined){
-      current = "check"; fromCheck = false; renderCheck();
+    if (fromCheck && next !== "check" && answers[SCREENS[next] ? SCREENS[next].name : ""] !== undefined){
+      fromCheck = false;
+      goTo("check");
     } else {
       if (next === "check") fromCheck = false;
-      current = next;
-      next === "check" ? renderCheck() : renderQuestion(next);
+      goTo(next);
     }
     return false;
   }
 
-  function back(){
-    if (current === "check" || !trail.length){
-      if (!trail.length) return restart();
-    }
-    fromCheck = false;
-    current = trail.pop();
-    renderQuestion(current);
-    return false;
-  }
-
-  function change(id){
-    fromCheck = true;
-    current = id;
-    renderQuestion(id);
-    return false;
-  }
-
+  function back(){ history.back(); return false; }
+  function change(id){ fromCheck = true; goTo(id); return false; }
   function uncheckNone(box){
     if (box.checked){ const n = document.getElementById(box.name + "-none"); if (n) n.checked = false; }
   }
   function checkNone(box){
-    if (box.checked) document.querySelectorAll(`input[name="${box.name}"]`).forEach(i => { if (i !== box) i.checked = false; });
+    if (box.checked) [].forEach.call(document.querySelectorAll('input[name="' + box.name + '"]'), i => { if (i !== box) i.checked = false; });
   }
 
   /* ---------- check your answers ---------- */
+  function displayAnswer(id){
+    const s = SCREENS[id];
+    const v = answers[s.name];
+    if (id === "dob"){
+      const d = toDate(v);
+      const ctxAge = ageAt(d, new Date());
+      const yg = schoolYearGroup(d, new Date());
+      const extra = ctxAge < 19 ? " (age " + ctxAge + ", " + schoolYearLabel(yg) + ")" : " (age " + ctxAge + ")";
+      return fmtDate(d) + extra;
+    }
+    if (Array.isArray(v)){
+      const all = visibleOptions(s).concat(s.noneOption ? [s.noneOption] : []);
+      return v.map(x => { const o = all.filter(z => z.value === x)[0]; return o ? o.label : x; }).join(", ");
+    }
+    if (s.options){
+      const o = visibleOptions(s).filter(z => z.value === v)[0];
+      return o ? o.label : String(v);
+    }
+    return String(v) + (s.suffix ? " " + s.suffix : "");
+  }
+
   function renderCheck(){
-    const seen = new Set();
-    const rows = trail.filter(id => { if (seen.has(id)) return false; seen.add(id); return answers[SCREENS[id].name] !== undefined; })
-      .map(id => `<tr class="gds-summary-list__row">
-        <td class="gds-summary-list__key">${esc(QUESTION_LABELS[id])}</td>
-        <td class="gds-summary-list__value">${esc(displayAnswer(id))}</td>
-        <td class="gds-summary-list__actions"><a href="#" onclick="return App.change('${id}')">Change<span class="gds-u-visually-hidden"> ${esc(QUESTION_LABELS[id].toLowerCase())}</span></a></td>
-      </tr>`).join("");
-    el().innerHTML = `${backLink()}
-      <h1 tabindex="-1" id="page-heading">Check your answers</h1>
-      <table class="gds-summary-list"><tbody>${rows}</tbody></table>
-      <button class="gds-button" onclick="App.results()">See which vaccinations to look into</button>`;
+    setTitle("Check the answers", false);
+    const rows = trailOrder().map(id =>
+      '<li class="summary-row"><span class="summary-key">' + esc(QUESTION_LABELS[id]) + '</span>' +
+      '<span class="summary-val">' + esc(displayAnswer(id)) + '</span>' +
+      '<span class="summary-act"><a href="#" onclick="return App.change(\'' + id + '\')">Change<span class="visually-hidden"> ' + esc(QUESTION_LABELS[id].toLowerCase()) + '</span></a></span></li>'
+    ).join("");
+    el().innerHTML = backLink() +
+      '<h1 id="page-heading" tabindex="-1">Check the answers</h1>' +
+      '<ul class="summary-list">' + rows + '</ul>' +
+      '<button class="btn" onclick="return App.results()">See the results</button>';
     focusStart();
   }
 
   /* ---------- results ---------- */
-  function addRec(map, key, reason){
-    if (!map.has(key)) map.set(key, []);
-    if (reason && !map.get(key).includes(reason)) map.get(key).push(reason);
+  function toggleHad(key){
+    const i = had.indexOf(key);
+    if (i > -1) had.splice(i, 1); else had.push(key);
+    syncHash();
+    renderResults();
+    const btn = document.getElementById("had-" + key);
+    if (btn) btn.focus();
+    return false;
   }
 
-  function adultResults(){
-    const a = answers, recs = new Map(), notes = [];
-    const age = Number(a.age);
+  function card(key, entry, ctx, state, done){
+    const v = V[key];
+    const tag = done ? '<span class="tag tag--done">Already had</span>'
+      : (state.open ? '<span class="tag tag--now">' + esc(state.label) + '</span>'
+                    : '<span class="tag tag--later">' + esc(state.label) + '</span>');
+    const route = ROUTES[v.route];
+    const reasons = entry.reasons.map(r => '<li>' + esc(r) + '</li>').join("");
+    const seasonDetail = (!state.open && state.detail) ? '<p class="card__meta">' + esc(state.detail) + '</p>' : "";
+    const hadLabel = done ? "Not had this after all" : (ctx.isSelf ? "I have already had this" : "They have already had this");
+    return '<div class="card' + (done ? " card--done" : "") + '">' +
+      '<h3>' + esc(v.name) + ' ' + tag + '</h3>' +
+      '<p class="card__meta"><strong>Schedule:</strong> ' + esc(v.when) + '</p>' +
+      seasonDetail +
+      (done ? "" : '<p class="card__meta"><strong>Why it came up:</strong></p><ul class="card__reasons">' + reasons + '</ul>') +
+      (done ? "" : '<div class="card__route"><strong>' + esc(route.label) + '</strong>' + esc(route.text) + '</div>') +
+      '<div class="card__actions">' +
+      '<a href="' + esc(v.url) + '" target="_blank" rel="noopener noreferrer">Read more about the ' + esc(v.name.toLowerCase()) + ' (opens in a new tab)</a>' +
+      (v.oneOff || done ? '<button class="linkbtn" id="had-' + esc(key) + '" onclick="return App.toggleHad(\'' + esc(key) + '\')">' + esc(hadLabel) + '</button>' : "") +
+      '</div></div>';
+  }
 
-    // Routine by age
-    if (age >= 65){
-      addRec(recs,"flu","you're aged 65 or over — offered every year");
-      addRec(recs,"pneumo","you're aged 65 or over");
-    }
-    if (age >= 70 && age <= 79) addRec(recs,"shingles","you're aged 70 to 79");
-    else if (age >= 65 && age < 70) addRec(recs,"shingles","you're 65 or over — eligible if you turned 65 on or after 1 September 2023 (check with your GP surgery)");
-    if (age >= 75){
-      addRec(recs,"rsv","you're aged 75 or over");
-      addRec(recs,"covid","you're aged 75 or over");
-    }
+  function renderResults(){
+    setTitle("Results", false);
+    if (!answers.dob) return renderStart();
+    const today = new Date();
+    const ctx = buildContext(answers, today);
+    const {recs, notes} = evaluate(ctx);
 
-    // Pregnancy
-    if (a.pregnancy === "yes"){
-      const w = Number(a.weeks);
-      addRec(recs,"fluPreg","you're pregnant — recommended during flu season at any stage");
-      addRec(recs,"wcough", w >= 20 ? `you're ${w} weeks pregnant — this is usually offered from around 20 weeks, so ask about it now if you've not had it` : `you're pregnant — it will be offered from around 20 weeks (you're at ${w} weeks now)`);
-      addRec(recs,"rsvPreg", w >= 28 ? `you're ${w} weeks pregnant — offered from 28 weeks, so ask about it now` : `you're pregnant — it will be offered from 28 weeks (you're at ${w} weeks now)`);
-    }
-
-    // Weakened immune system
-    if (a.immuno === "yes"){
-      addRec(recs,"pneumo","you have a weakened immune system");
-      addRec(recs,"flu","you have a weakened immune system — offered every year");
-      addRec(recs,"covid","you have a weakened immune system");
-      if (age >= 18) addRec(recs,"shingles","you have a weakened immune system and are aged 18 or over");
-    }
-    if (a.immuno === "notsure"){
-      notes.push({title:"Not sure about your immune system?", html:"<p>Your GP surgery can check your records and tell you whether you count as immunosuppressed. If you are, you may also be offered the pneumococcal, flu, COVID-19 and shingles vaccines.</p>"});
-    }
-
-    // Health conditions
-    (a.conditions || []).forEach(c => {
-      const rule = CONDITION_RULES[c];
-      if (rule) rule.vaccines.forEach(v => addRec(recs, v, rule.reason));
+    const now = [], later = [], done = [];
+    recs.forEach((entry, key) => {
+      const state = seasonState(V[key].season, today);
+      if (had.indexOf(key) > -1) done.push(card(key, entry, ctx, state, true));
+      else if (entry.later || !state.open) later.push(card(key, entry, ctx, state, false));
+      else now.push(card(key, entry, ctx, state, false));
     });
 
-    // Work
-    const work = a.work || [];
-    if (work.includes("frontline") || work.includes("socialcare")){
-      addRec(recs,"flu","you work in frontline health or social care — offered every year");
-      addRec(recs,"covid","you work in frontline health or social care (when a seasonal campaign includes staff)");
-      if (work.includes("frontline")) addRec(recs,"hepb","your work may bring you into contact with blood or body fluids");
-    }
-    if (work.includes("lab")) addRec(recs,"hepb","you handle infectious samples at work");
-    if (work.length && !work.includes("none")){
-      notes.push({title:"Work vaccinations", html:"<p>Vaccinations you need because of your job are usually arranged and paid for by your employer through their occupational health service — ask them first rather than your GP.</p>"});
-    }
+    const who = ctx.isSelf ? "you" : "them";
+    let body = "";
 
-    // University or college
-    if (a.student === "yes"){
-      addRec(recs,"menacwy","you're starting university or college — protects against serious infections like meningitis");
-      addRec(recs,"mmr","outbreaks of measles and mumps happen at universities — make sure you've had 2 doses");
-      addRec(recs,"hpv","if you missed the HPV vaccine at school, you can still catch up");
-      addRec(recs,"menb","from 20 July 2026, new students aged 24 or under starting university or some residential further education can get the MenB vaccine");
-    } else if (age <= 24){
-      notes.push({title:"Under 25?", html:"<p>You can still catch up on the <a href='https://www.nhs.uk/vaccinations/menacwy-vaccine/' target='_blank' rel='noopener'>MenACWY vaccine</a> until your 25th birthday, and on <a href='https://www.nhs.uk/vaccinations/mmr-vaccine/' target='_blank' rel='noopener'>MMR</a> at any age, if you missed them.</p>"});
+    if (now.length){
+      body += '<section class="results-group"><h2>Worth asking about now</h2>' +
+        '<p class="results-group__intro">These are available at the moment, based on the answers given.</p>' + now.join("") + '</section>';
     }
-
-    return {recs, notes};
-  }
-
-  function childResults(){
-    const a = answers, recs = new Map(), notes = [];
-    const band = a.childAge;
-
-    if (band === "baby"){
-      addRec(recs,"sixin1","given at 8, 12 and 16 weeks old");
-      addRec(recs,"rota","given at 8 and 12 weeks old");
-      addRec(recs,"menbBaby","given at 8 weeks, 12 weeks and 1 year old");
-      addRec(recs,"pneumoBaby","first dose at 16 weeks old");
+    if (later.length){
+      body += '<section class="results-group"><h2>Coming up later</h2>' +
+        '<p class="results-group__intro">Not available yet. Either the seasonal campaign has not opened, or it is due at a later point.</p>' + later.join("") + '</section>';
     }
-    if (band === "toddler"){
-      addRec(recs,"mmrv","first dose at 1 year old (for children born on or after 1 January 2025); timing of doses depends on date of birth");
-      addRec(recs,"pneumoBaby","second dose at 1 year old");
-      addRec(recs,"menbBaby","third dose at 1 year old");
-      addRec(recs,"sixin1","fourth dose at 18 months (for babies born on or after 1 July 2024)");
-      addRec(recs,"childflu","every year from age 2");
-      addRec(recs,"fourin1","due at 3 years 4 months");
+    if (done.length){
+      body += '<section class="results-group"><h2>Marked as already had</h2>' +
+        '<p class="results-group__intro">Removed from the list above. A GP record is the reliable check.</p>' + done.join("") + '</section>';
     }
-    if (band === "primary"){
-      addRec(recs,"childflu","offered every year until the end of Year 11");
-      notes.push({title:"Check earlier vaccines", html:"<p>Check the child's red book or ask the GP surgery that they've had the 4-in-1 pre-school booster and 2 doses of MMR/MMRV. It's not too late to catch up.</p>"});
-    }
-    if (band === "yr8"){
-      addRec(recs,"hpvTeen","offered at 12 to 13 (school Year 8)");
-      addRec(recs,"childflu","offered every year until the end of Year 11");
-    }
-    if (band === "teen"){
-      addRec(recs,"tdipv","offered at 14 (school Year 9)");
-      addRec(recs,"menacwyTeen","offered at 14 (school Year 9)");
-      addRec(recs,"childflu","offered every year until the end of Year 11");
+    if (!now.length && !later.length && !done.length){
+      body += '<div class="notice"><h3>Nothing specific came up from these answers</h3>' +
+        '<p>That does not mean no vaccine is needed. This checker covers a short list of common situations, and it does not know what ' + who + ' ' +
+        (ctx.isSelf ? "have" : "have") + ' already had.</p>' +
+        '<p>It is still worth checking with a GP surgery or pharmacist that the routine schedule is complete, particularly the two doses of MMR, which can be caught up at any age.</p></div>';
     }
 
-    const r = a.childRisk || [];
-    if (r.includes("condition")) addRec(recs,"childflu","they have a long-term health condition — offered every year from 6 months to 17 years");
-    if (r.includes("immuno")) addRec(recs,"covid","they have a weakened immune system — usually offered in spring and winter (from 6 months old)");
-    if (r.includes("hepbmum")) addRec(recs,"hepb","their mother has hepatitis B — doses at birth and 4 weeks (and 12 months for babies born on or before 30 June 2024)");
-    if (r.includes("tb")) addRec(recs,"bcg","they're at higher risk of TB — usually given at around 4 weeks old, but older children can still be assessed");
+    const noteBlocks = notes.map(n =>
+      '<div class="notice notice--flat"><h3>' + esc(n.title) + '</h3>' + n.html + '</div>').join("");
 
-    notes.push({title:"Missed a vaccine?", html:"<p>It's best to have vaccines on time, but most can be caught up. Contact the GP surgery to book or rearrange.</p>"});
-    return {recs, notes};
-  }
-
-  function results(){
-    const isChild = answers.who === "child";
-    const {recs, notes} = isChild ? childResults() : adultResults();
-
-    let cards = "";
-    recs.forEach((reasons, key) => {
-      const v = V[key];
-      cards += `<div class="gds-card"><div class="gds-card__content">
-        <h3><a href="${v.url}" target="_blank" rel="noopener">${esc(v.name)}</a></h3>
-        <p class="gds-body-s"><strong>When:</strong> ${esc(v.when)}</p>
-        <p class="gds-body-s"><strong>Why${isChild ? "" : " you"}:</strong></p>
-        <ul class="gds-body-s">${reasons.map(r => `<li>${r}</li>`).join("")}</ul>
-      </div></div>`;
-    });
-
-    const noteBlocks = notes.map(n => `<div class="gds-inset-text"><h3>${esc(n.title)}</h3>${n.html}</div>`).join("");
-
-    const noneMsg = `<div class="gds-inset-text">
-      <p>Based on your answers, ${isChild ? "the child is" : "you're"} not currently in a group offered extra routine NHS vaccinations.</p>
-      <p>It's still worth checking you've had 2 doses of the <a href="https://www.nhs.uk/vaccinations/mmr-vaccine/" target="_blank" rel="noopener">MMR vaccine</a> — you can catch up at any age.</p>
-    </div>`;
-
-    el().innerHTML = `${backLinkToCheck()}
-      <h1 tabindex="-1" id="page-heading">Vaccinations to look into</h1>
-      <p class="gds-hint">Based on your answers and the <a href="https://www.nhs.uk/vaccinations/nhs-vaccinations-and-when-to-have-them/" target="_blank" rel="noopener">NHS vaccination schedule</a>. Select a vaccine to read about it on the NHS website.</p>
-      ${recs.size ? cards : noneMsg}
-      ${noteBlocks}
-      <div class="gds-care-card">
-        <h2 class="gds-care-card__heading">Speak to your GP surgery, pharmacist or midwife</h2>
-        <div class="gds-care-card__content">
-          <p>This tool is a high-level guide, not medical advice. Whether a vaccine is right for ${isChild ? "the child" : "you"} depends on ${isChild ? "their" : "your"} full medical history and vaccination record, which only a health professional can check.</p>
-        </div>
-      </div>
-      <button class="gds-button gds-button--secondary" onclick="App.restart()">Start again</button>`;
+    el().innerHTML = backLink("Back") +
+      '<h1 id="page-heading" tabindex="-1">Vaccinations to look into</h1>' +
+      '<p class="hint">Based on the answers given and the routine schedule. This is a triage prompt, not a clinical decision. ' +
+      'Whether a vaccine is right for ' + who + ' depends on the full medical and vaccination record.</p>' +
+      body +
+      noteBlocks +
+      '<div class="notice notice--warn"><h3>This is not medical advice</h3>' +
+      '<p>This list came from a design prototype, not a health service. It is not connected to any vaccination record and it only asks a handful of questions, so it may be incomplete or wrong.</p>' +
+      '<p style="margin-bottom:0">A GP surgery, practice nurse, pharmacist or midwife can see the actual record. Speak to one of them before acting on anything above.</p></div>' +
+      '<div class="btn-row no-print"><button class="btn btn--secondary" onclick="return App.savePdf()">Save as PDF</button>' +
+      '<button class="btn btn--secondary" onclick="return App.restart()">Start again</button></div>';
     focusStart();
-    current = "results";
   }
 
-  function backLinkToCheck(){
-    return '<div class="gds-back-link"><a href="#" onclick="return App.backToCheck()">Go back</a></div>';
-  }
-  function backToCheck(){ current = "check"; renderCheck(); return false; }
-
-  /* ---------- start page ---------- */
-  function render(focusHeading){
-    el().innerHTML = `
-      <h1 tabindex="-1" id="page-heading">Check which NHS vaccinations you may be eligible for</h1>
-      <p>Use this tool to find out which routine NHS vaccinations you — or a child you care for — may be able to get, based on age, pregnancy, health conditions and work.</p>
-      <p>It takes about 2 minutes. You will not be asked for your name or any contact details, and your answers are not stored or sent anywhere.</p>
-      <div class="gds-inset-text"><p>This checker is a design prototype based on <a href="https://www.nhs.uk/vaccinations/nhs-vaccinations-and-when-to-have-them/" target="_blank" rel="noopener">NHS vaccinations and when to have them</a>. It does not replace advice from a GP, pharmacist or midwife.</p></div>
-      <button class="gds-button" onclick="App.begin()">Start now</button>`;
+  /* ---------- start ---------- */
+  function renderStart(){
+    setTitle("", false);
+    current = "start";
+    el().innerHTML =
+      '<h1 id="page-heading" tabindex="-1">Check which vaccinations may be due</h1>' +
+      '<p>Answer a few questions to see which routine vaccinations may be worth asking about, for yourself, another adult, or a child.</p>' +
+      '<p>It takes about two minutes. No name or contact details are asked for, and no answers are stored or sent anywhere.</p>' +
+      '<div class="notice notice--warn"><h3>This is not medical advice</h3>' +
+      '<p>This is purely a design tool. It is not a real health service, it is not connected to any vaccination record, and it must not be used to make decisions about anyone’s health.</p>' +
+      '<p>The results are generated from a handful of self-reported answers and a simplified version of the routine schedule. They may be incomplete, out of date, or wrong.</p>' +
+      '<p style="margin-bottom:0">Always speak to a GP, practice nurse, pharmacist or midwife before acting on anything it shows.</p></div>' +
+      '<div class="notice notice--flat"><h3>What this is for</h3>' +
+      '<p>A proof of concept for eligibility triage. It shows how a date of birth, a handful of questions and a rules layer can narrow a long national schedule down to a short, dated list.</p>' +
+      '<p style="margin-bottom:0">It does not cover travel vaccinations.</p></div>' +
+      '<button class="btn" onclick="return App.begin()">Start</button>';
     window.scrollTo(0,0);
-    if (focusHeading) document.getElementById("page-heading").focus();
+    const h = document.getElementById("page-heading");
+    if (h) h.focus();
+    return true;
   }
 
-  function begin(){ current = "who"; trail = []; answers = {}; fromCheck = false; renderQuestion("who"); }
+  /* Browsers use document.title as the default filename when printing to PDF,
+     so it is swapped for the duration of the print call and then restored. */
+  function savePdf(){
+    const prev = document.title;
+    const restore = () => {
+      document.title = prev;
+      window.removeEventListener("afterprint", restore);
+    };
+    document.title = "Vaccinations-results";
+    window.addEventListener("afterprint", restore);
+    window.print();
+    setTimeout(restore, 1500);
+    return false;
+  }
 
-  return {restart, submit, back, change, results, begin, uncheckNone, checkNone, backToCheck, render};
+  function begin(){ answers = {}; had = []; fromCheck = false; goTo(FLOW_START); return false; }
+  function restart(){ answers = {}; had = []; fromCheck = false; goTo("start"); return false; }
+  function results(){ fromCheck = false; goTo("results"); return false; }
+
+  return {submit, back, change, results, begin, restart, savePdf, uncheckNone, checkNone, toggleHad, onHashChange, renderScreen,
+          _debug:{buildContext, evaluate, seasonState, schoolYearGroup, decodeState, encodeState}};
 })();
-window.App = App;
 
-/* boot */
-document.addEventListener("DOMContentLoaded", () => App.render(false));
+window.App = App;
+window.addEventListener("hashchange", App.onHashChange);
+document.addEventListener("DOMContentLoaded", () => {
+  const st = decodeState(location.hash);
+  App.renderScreen(st.screen === "start" ? "start" : st.screen);
+});
+
+/* Exposed for the node test harness. */
+if (typeof module !== "undefined" && module.exports){
+  module.exports = {buildContext, evaluate, seasonState, schoolYearGroup, schoolYearLabel,
+                    ageAt, monthsBetween, toDate, fmtDate, encodeState, decodeState, V, RULES, SCREENS, COHORTS};
+}
 </script>
 </body>
 </html>
+
