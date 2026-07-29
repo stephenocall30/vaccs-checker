@@ -1,8 +1,8 @@
-# NHS Vaccination Eligibility Checker (Prototype)
+# Vaccination Eligibility Checker (Prototype)
 
 A quick self-serve tool that asks 6 questions and tells you which NHS vaccinations might be worth looking into, with links to the relevant NHS pages.
 
-**[Try it here](https://YOUR-USERNAME.github.io/YOUR-REPO/)** *(update this link)*
+**[Try it here][(https://stephenocall30.github.io/vaccs-checker/)]**
 
 ⚠️ **This is a prototype, not an NHS service.** It's not medical advice. Talk to your GP about anything it flags.
 
