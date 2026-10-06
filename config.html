@@ -1,0 +1,635 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Campaign Config Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: question column on the left, sticky output column on the right; stacks to one column on narrow screens */
+:root{
+  --bg:#f4f6f9;--surface:#ffffff;--fg:#1c2632;--muted:#5b6877;--line:#d6dde6;
+  --accent:#005eb8;--accent-soft:#e5eef8;--accent-fg:#ffffff;
+  --warn:#9a4f00;--warn-soft:#fcf0e1;--bad:#b3242b;--bad-soft:#fae8e9;--good:#1b6e40;--good-soft:#e4f3ea;
+  --code-bg:#0f1b29;--code-fg:#d9e4f0;--code-key:#8cc4ff;--code-str:#b7e3a8;--code-dim:#7d8ea3;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f151c;--surface:#17202a;--fg:#e3e9f0;--muted:#97a5b5;--line:#2a3643;
+  --accent:#5ea8ef;--accent-soft:#16304a;--accent-fg:#06121f;
+  --warn:#f0b26b;--warn-soft:#33240f;--bad:#f08a8f;--bad-soft:#3a1a1d;--good:#7fd3a2;--good-soft:#132e20;
+  --code-bg:#0a1119;--code-fg:#d9e4f0;--code-key:#8cc4ff;--code-str:#b7e3a8;--code-dim:#6f8196;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151c;--surface:#17202a;--fg:#e3e9f0;--muted:#97a5b5;--line:#2a3643;
+  --accent:#5ea8ef;--accent-soft:#16304a;--accent-fg:#06121f;
+  --warn:#f0b26b;--warn-soft:#33240f;--bad:#f08a8f;--bad-soft:#3a1a1d;--good:#7fd3a2;--good-soft:#132e20;
+  --code-bg:#0a1119;--code-fg:#d9e4f0;--code-key:#8cc4ff;--code-str:#b7e3a8;--code-dim:#6f8196;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.5}
+.wrap{max-width:1280px;margin:0 auto;padding-inline:20px;padding-block:28px 64px}
+h1,h2,h3{text-wrap:balance;margin:0}
+h1{font-size:1.6rem;font-weight:600;letter-spacing:-.01em}
+.intro{color:var(--muted);max-width:62ch;margin:6px 0 0}
+code,.mono{font-family:var(--mono);font-size:.85em}
+
+.topbar{display:flex;flex-wrap:wrap;gap:16px 24px;align-items:flex-end;justify-content:space-between;margin-bottom:24px}
+.loader{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.loader .lbl{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-right:4px}
+.chip{font:inherit;font-size:.85rem;border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:999px;padding:5px 12px;cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.toggle{display:flex;gap:8px;align-items:center;font-size:.85rem;color:var(--muted);cursor:pointer}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,520px);gap:28px;align-items:start}
+@media (max-width:980px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+section.s{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:20px 22px;display:grid;gap:18px}
+.form{display:grid;gap:16px}
+.s-head{display:flex;gap:12px;align-items:baseline}
+.s-num{font-family:var(--mono);font-size:.8rem;color:var(--accent)}
+.s-head h2{font-size:1.05rem;font-weight:600}
+.s-sub{color:var(--muted);font-size:.88rem;margin:-10px 0 0}
+
+.q{display:grid;gap:6px;border:0;margin:0;padding:0;min-width:0}
+.q > label,.q > legend{font-weight:500;padding:0}
+.hint{color:var(--muted);font-size:.85rem;margin:0}
+.fld{display:none;font-family:var(--mono);font-size:.72rem;color:var(--accent);background:var(--accent-soft);padding:1px 6px;border-radius:4px;margin-left:6px;font-weight:400;vertical-align:1px}
+body.show-fields .fld{display:inline-block}
+.row{display:flex;flex-wrap:wrap;gap:12px}
+.row > .q{flex:1 1 160px}
+input[type=text],input[type=url],input[type=number],input[type=date],input[type=time],select{
+  font:inherit;font-size:.95rem;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:5px;padding:7px 10px;width:100%;min-width:0}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+input[type=number]{max-width:9rem}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg label{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:5px;padding:6px 12px;cursor:pointer;font-size:.92rem;background:var(--bg)}
+.seg label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.seg input{accent-color:var(--accent);margin:0}
+.checks{display:flex;flex-wrap:wrap;gap:6px 16px}
+.checks label{display:flex;gap:6px;align-items:center;font-size:.92rem}
+.checks input{accent-color:var(--accent)}
+
+.card{border:1px solid var(--line);border-radius:5px;padding:14px;display:grid;gap:12px;background:var(--bg)}
+.card-head{display:flex;gap:10px;align-items:center}
+.card-head input{flex:1;font-weight:500}
+.btn-link{font:inherit;font-size:.85rem;background:none;border:0;color:var(--muted);cursor:pointer;padding:4px 6px;text-decoration:underline}
+.btn-link:hover{color:var(--bad)}
+.btn{font:inherit;font-size:.9rem;font-weight:500;border:1px solid var(--accent);color:var(--accent);background:transparent;border-radius:5px;padding:7px 14px;cursor:pointer}
+.btn:hover{background:var(--accent-soft)}
+.btn.solid{background:var(--accent);color:var(--accent-fg)}
+.btn-row{display:flex;flex-wrap:wrap;gap:8px}
+.sub-q{display:grid;gap:12px;padding-left:14px;border-left:2px solid var(--line)}
+.empty{color:var(--muted);font-size:.9rem;font-style:italic;margin:0}
+
+details.tech{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:16px 22px}
+details.tech summary{cursor:pointer;font-weight:600}
+details.tech summary span{font-weight:400;color:var(--muted);font-size:.88rem;margin-left:6px}
+details.tech[open] summary{margin-bottom:16px}
+details.tech .inner{display:grid;gap:16px}
+
+aside{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);display:grid;gap:14px;min-width:0}
+@media (max-width:980px){aside{position:static}}
+.out{background:var(--code-bg);border-radius:var(--r);overflow:hidden;min-width:0}
+.out-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid #ffffff14}
+.out-head .file{font-family:var(--mono);font-size:.8rem;color:var(--code-dim)}
+.copy{font:inherit;font-size:.8rem;background:#ffffff14;color:var(--code-fg);border:1px solid #ffffff24;border-radius:4px;padding:4px 10px;cursor:pointer}
+.copy:hover{background:#ffffff24}
+pre.yaml{margin:0;padding:14px 16px;overflow:auto;max-height:56vh;font-family:var(--mono);font-size:.8rem;line-height:1.55;color:var(--code-fg);tab-size:2}
+@media (max-width:980px){pre.yaml{max-height:none}}
+.yk{color:var(--code-key)}.ys{color:var(--code-str)}.yd{color:var(--code-dim)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:10px}
+.panel h3{font-size:.78rem;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;display:flex;align-items:center;gap:10px}
+.pill{font-size:.72rem;letter-spacing:.02em;text-transform:none;font-weight:600;padding:2px 9px;border-radius:999px}
+.pill.good{background:var(--good-soft);color:var(--good)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+ul.issues,ul.todo{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+ul.issues li{font-size:.88rem;padding:7px 10px 7px 12px;border-radius:4px;border-left:3px solid}
+ul.issues li.error{background:var(--bad-soft);border-color:var(--bad)}
+ul.issues li.warn{background:var(--warn-soft);border-color:var(--warn)}
+ul.todo li{font-size:.88rem;display:grid;grid-template-columns:18px 1fr;gap:8px}
+ul.todo li::before{content:"";width:13px;height:13px;border:1.5px solid var(--muted);border-radius:3px;margin-top:4px}
+.note{font-size:.8rem;color:var(--muted);margin:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <div class="topbar">
+    <div>
+      <h1>Campaign config builder</h1>
+      <p class="intro">Answer the questions to generate a campaign entry for <code>campaigns.yml</code>. A prototype for the shared journey configuration epic: plain-language questions, each mapped to one config field.</p>
+    </div>
+    <div style="display:grid;gap:10px;justify-items:end">
+      <div class="loader" id="loader">
+        <span class="lbl">Start from</span>
+        <button type="button" class="chip" data-ex="flu">Flu 2025/26</button>
+        <button type="button" class="chip" data-ex="covid">COVID spring 2026</button>
+        <button type="button" class="chip" data-ex="rsv">RSV</button>
+        <button type="button" class="chip" data-ex="menb">MenB</button>
+        <button type="button" class="chip" data-ex="blank">Blank</button>
+      </div>
+      <label class="toggle"><input type="checkbox" id="showFields" checked> Show config field names</label>
+    </div>
+  </div>
+
+  <div class="grid">
+    <form class="form" id="form" autocomplete="off" onsubmit="return false">
+
+      <section class="s">
+        <div class="s-head"><span class="s-num">1</span><h2>About the campaign</h2></div>
+        <div class="row">
+          <div class="q">
+            <label for="vaccine">Which vaccine is this for? <code class="fld">VaccineTypes</code></label>
+            <input type="text" id="vaccine" list="vaccineList" placeholder="e.g. Flu">
+            <datalist id="vaccineList"><option value="Flu"><option value="Covid"><option value="Rsv"><option value="MenB"></datalist>
+          </div>
+          <div class="q">
+            <label for="campaignId">Short name for the campaign <code class="fld">CampaignId</code></label>
+            <input type="text" id="campaignId" placeholder="e.g. flu">
+          </div>
+        </div>
+        <p class="hint" style="margin-top:-8px">Short name: lowercase, no spaces. It also names the journey unless the dev team says otherwise.</p>
+        <fieldset class="q">
+          <legend>Does a booking journey already exist for this vaccine? <code class="fld">Journey</code></legend>
+          <p class="hint">A new vaccine needs its own journey file (screens and content) before it can go live.</p>
+          <div class="seg"><label><input type="radio" name="journeyExists" value="yes">Yes, reuse it</label><label><input type="radio" name="journeyExists" value="no">No, it needs building</label></div>
+        </fieldset>
+        <div class="q">
+          <label for="url">Which NHS website page sends people to booking? <code class="fld">NhsStartPageUrl</code></label>
+          <input type="url" id="url" placeholder="https://www.nhs.uk/...">
+        </div>
+      </section>
+
+      <section class="s">
+        <div class="s-head"><span class="s-num">2</span><h2>Key dates</h2></div>
+        <p class="s-sub">Times are UTC. During British Summer Time, 08:00 UTC is 09:00 in the UK.</p>
+        <div class="row">
+          <div class="q"><label for="openDate">Booking service opens <code class="fld">StartDateTimeUtc</code></label><input type="date" id="openDate"></div>
+          <div class="q"><label for="openTime">at (UTC)</label><input type="time" id="openTime" value="08:00"></div>
+        </div>
+        <div class="row">
+          <div class="q"><label for="closeDate">Booking service closes <code class="fld">EndDateTimeUtc</code></label><input type="date" id="closeDate"></div>
+          <div class="q"><label for="closeTime">at (UTC)</label><input type="time" id="closeTime" value="16:00"></div>
+        </div>
+        <p class="hint" style="margin-top:-8px">Leave the close date blank if the service stays open, as RSV does.</p>
+        <div class="row">
+          <div class="q"><label for="campStart">Campaign starts <code class="fld">CampaignStartDate</code></label><input type="date" id="campStart"></div>
+          <div class="q"><label for="campEnd">Campaign ends <code class="fld">CampaignEndDate</code></label><input type="date" id="campEnd"></div>
+        </div>
+        <div class="row">
+          <div class="q"><label for="firstBook">First date someone can have an appointment <code class="fld">FirstBookingDate</code></label><input type="date" id="firstBook"></div>
+          <div class="q"><label for="lastBook">Last date someone can have an appointment <code class="fld">LastBookingDate</code></label><input type="date" id="lastBook"></div>
+        </div>
+      </section>
+
+      <section class="s">
+        <div class="s-head"><span class="s-num">3</span><h2>Who can book</h2></div>
+        <p class="s-sub">Add one row per cohort. Set each by age or by a date of birth window. Cohorts where the person confirms they're eligible (for example, at-risk groups) need self-referral.</p>
+        <div id="cohorts" style="display:grid;gap:12px"></div>
+        <div class="btn-row"><button type="button" class="btn" id="addCohort">Add a cohort</button></div>
+      </section>
+
+      <section class="s">
+        <div class="s-head"><span class="s-num">4</span><h2>Appointment types sites will offer</h2></div>
+        <p class="s-sub">Each type needs a code the booking system and sites already recognise. Check codes with the booking team. You can start from the cohorts above.</p>
+        <div id="appts" style="display:grid;gap:12px"></div>
+        <div class="btn-row">
+          <button type="button" class="btn" id="addAppt">Add an appointment type</button>
+          <button type="button" class="btn" id="suggestAppts">Suggest from cohorts</button>
+        </div>
+      </section>
+
+      <section class="s">
+        <div class="s-head"><span class="s-num">5</span><h2>Booking more than one vaccine</h2></div>
+        <fieldset class="q">
+          <legend>Can people book this alongside another vaccine in the same appointment? <code class="fld">CoAdminVaccineTypes</code></legend>
+          <div class="checks" id="coadmin">
+            <label><input type="checkbox" value="Covid">COVID</label>
+            <label><input type="checkbox" value="Flu">Flu</label>
+            <label><input type="checkbox" value="Rsv">RSV</label>
+          </div>
+        </fieldset>
+        <div class="q" data-show="coadmin">
+          <label for="coadminMinAge">Youngest age for a joint appointment <code class="fld">MinimumAgeForCoAdmin</code></label>
+          <input type="number" id="coadminMinAge" min="0">
+        </div>
+      </section>
+
+      <section class="s">
+        <div class="s-head"><span class="s-num">6</span><h2>Booking for other people</h2></div>
+        <fieldset class="q">
+          <legend>Can one person book for others in the same visit? <code class="fld">GroupBookingMax</code></legend>
+          <div class="seg"><label><input type="radio" name="group" value="yes">Yes</label><label><input type="radio" name="group" value="no">No</label></div>
+        </fieldset>
+        <div class="q" data-show="group=yes">
+          <label for="groupMax">Most people in one booking, including the booker</label>
+          <input type="number" id="groupMax" min="2" value="2">
+        </div>
+      </section>
+
+      <section class="s">
+        <div class="s-head"><span class="s-num">7</span><h2>Repeat doses and boosters</h2></div>
+        <fieldset class="q">
+          <legend>Does someone need a gap since their last dose before they can book?</legend>
+          <div class="seg"><label><input type="radio" name="booster" value="yes">Yes</label><label><input type="radio" name="booster" value="no">No</label></div>
+        </fieldset>
+        <div class="row" data-show="booster=yes">
+          <div class="q"><label for="boosterMin">Minimum days since last dose <code class="fld">BoosterMinDays</code></label><input type="number" id="boosterMin" min="0"></div>
+          <div class="q"><label for="boosterAdv">Days before that someone can book ahead <code class="fld">BoosterAdvancedBookingInDays</code></label><input type="number" id="boosterAdv" min="0"></div>
+        </div>
+      </section>
+
+      <section class="s">
+        <div class="s-head"><span class="s-num">8</span><h2>After booking</h2></div>
+        <fieldset class="q">
+          <legend>Hide the "book another vaccination" link on the confirmation page? <code class="fld">ShouldHideBookAnotherVaccineLink</code></legend>
+          <p class="hint">MenB hides it because its cohort is unlikely to be eligible for other vaccines.</p>
+          <div class="seg"><label><input type="radio" name="hideAnother" value="yes">Yes, hide it</label><label><input type="radio" name="hideAnother" value="no">No</label></div>
+        </fieldset>
+      </section>
+
+      <details class="tech" id="tech">
+        <summary>Set by the dev team <span>Defaults fill in for you</span></summary>
+        <div class="inner">
+          <div class="row">
+            <div class="q"><label for="journey">Journey name <code class="fld">Journey</code></label><input type="text" id="journey" placeholder="Same as short name"></div>
+            <div class="q"><label for="jv">Journey version <code class="fld">JourneyVersion</code></label><input type="number" id="jv" min="1"></div>
+          </div>
+          <div class="row">
+            <div class="q"><label for="apptGroup">Appointment group <code class="fld">AppointmentGroup</code></label><input type="text" id="apptGroup" placeholder="Vaccine in capitals"></div>
+            <div class="q"><label for="shuttered">Page shown when closed <code class="fld">EntryPointShuttered</code></label><input type="text" id="shuttered" value="service-closed"></div>
+          </div>
+          <div class="q"><label for="daysToCheck">Days of availability to search <code class="fld">NumberOfDaysToCheck</code></label><input type="number" id="daysToCheck" min="0"><p class="hint">Optional. No current campaign sets this.</p></div>
+        </div>
+      </details>
+    </form>
+
+    <aside>
+      <div class="out">
+        <div class="out-head"><span class="file">campaigns.yml entry</span><button type="button" class="copy" id="copy">Copy</button></div>
+        <pre class="yaml" id="yaml" tabindex="0"></pre>
+      </div>
+      <div class="panel">
+        <h3>Checks <span class="pill" id="status"></span></h3>
+        <ul class="issues" id="issues"></ul>
+      </div>
+      <div class="panel">
+        <h3>Also needed before launch</h3>
+        <ul class="todo" id="todo"></ul>
+        <p class="note">This entry alone won't launch a campaign. The items above sit outside campaigns.yml.</p>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const v=id=>{const e=document.getElementById(id);return e?e.value.trim():''};
+const setV=(id,x)=>{const e=document.getElementById(id);if(e)e.value=x??''};
+const radio=n=>{const r=document.querySelector(`input[name="${n}"]:checked`);return r?r.value:''};
+const setRadio=(n,x)=>$$(`input[name="${n}"]`).forEach(r=>r.checked=r.value===x);
+const num=x=>x===''||x==null?null:Number(x);
+let uid=0;
+
+/* ---------- Repeaters ---------- */
+function cohortCard(c={}){
+  const n=++uid, el=document.createElement('div');
+  el.className='card cohort';
+  el.innerHTML=`
+    <div class="card-head"><input type="text" data-k="name" id="cn${n}" aria-label="Cohort name" placeholder="Cohort name, e.g. Adults 65 and over"><button type="button" class="btn-link rm">Remove</button></div>
+    <div class="seg"><label><input type="radio" name="rule${n}" data-k="rule" value="age">By age</label><label><input type="radio" name="rule${n}" data-k="rule" value="dob">By date of birth</label></div>
+    <div class="sub-q" data-when="age">
+      <div class="row">
+        <div class="q"><label for="cmin${n}">From age <code class="fld">MinimumAge</code></label><input type="number" min="0" data-k="minAge" id="cmin${n}" placeholder="No lower limit"></div>
+        <div class="q"><label for="cmax${n}">To age <code class="fld">MaximumAge</code></label><input type="number" min="0" data-k="maxAge" id="cmax${n}" placeholder="No upper limit"></div>
+      </div>
+      <fieldset class="q"><legend>Does the person need to confirm they're eligible? <code class="fld">RequireSelfReferral</code></legend>
+        <div class="seg"><label><input type="radio" name="sr${n}" data-k="selfRef" value="yes">Yes</label><label><input type="radio" name="sr${n}" data-k="selfRef" value="no">No</label></div></fieldset>
+    </div>
+    <div class="sub-q" data-when="dob">
+      <div class="row">
+        <div class="q"><label for="cdf${n}">Born on or after <code class="fld">MinimumDOB</code></label><input type="date" data-k="dobFrom" id="cdf${n}"></div>
+        <div class="q"><label for="cdt${n}">Born on or before <code class="fld">MaximumDOB</code></label><input type="date" data-k="dobTo" id="cdt${n}"></div>
+      </div>
+      <div class="q"><label for="cde${n}">Window stops applying on (optional) <code class="fld">ActiveEndDate</code></label><input type="date" data-k="dobEnd" id="cde${n}"></div>
+    </div>`;
+  const q=k=>el.querySelector(`[data-k="${k}"]`);
+  q('name').value=c.name||'';
+  el.querySelectorAll('[data-k="rule"]').forEach(r=>r.checked=r.value===(c.rule||'age'));
+  q('minAge').value=c.minAge??''; q('maxAge').value=c.maxAge??'';
+  el.querySelectorAll('[data-k="selfRef"]').forEach(r=>r.checked=r.value===(c.selfRef||'no'));
+  q('dobFrom').value=c.dobFrom||''; q('dobTo').value=c.dobTo||''; q('dobEnd').value=c.dobEnd||'';
+  el.querySelector('.rm').onclick=()=>{el.remove();update()};
+  $('#cohorts').appendChild(el);
+  return el;
+}
+function readCohorts(){
+  return $$('#cohorts .cohort').map(el=>{
+    const g=k=>el.querySelector(`[data-k="${k}"]`).value.trim();
+    const chk=k=>{const r=el.querySelector(`[data-k="${k}"]:checked`);return r?r.value:''};
+    return {name:g('name'),rule:chk('rule'),minAge:num(g('minAge')),maxAge:num(g('maxAge')),selfRef:chk('selfRef')==='yes',dobFrom:g('dobFrom'),dobTo:g('dobTo'),dobEnd:g('dobEnd')};
+  });
+}
+
+function apptCard(a={}){
+  const n=++uid, el=document.createElement('div');
+  el.className='card appt';
+  el.innerHTML=`
+    <div class="card-head"><input type="text" data-k="code" id="ac${n}" aria-label="Appointment code" placeholder="Code, e.g. FLU:65+" class="mono"><button type="button" class="btn-link rm">Remove</button></div>
+    <div class="row">
+      <div class="q"><label for="amin${n}">From age <code class="fld">MinimumAge</code></label><input type="number" min="0" data-k="minAge" id="amin${n}" placeholder="Any"></div>
+      <div class="q"><label for="amax${n}">To age <code class="fld">MaximumAge</code></label><input type="number" min="0" data-k="maxAge" id="amax${n}" placeholder="Any"></div>
+    </div>
+    <fieldset class="q"><legend>This appointment is <code class="fld">Properties</code></legend>
+      <div class="checks"><label><input type="checkbox" data-k="coadmin">A joint appointment with another vaccine</label><label><input type="checkbox" data-k="infant">For young children</label></div></fieldset>
+    <fieldset class="q"><legend>More than one dose?</legend>
+      <div class="checks"><label><input type="checkbox" data-k="doses">Yes, set dose rules <code class="fld">DoseSettings</code></label></div></fieldset>
+    <div class="sub-q" data-dose>
+      <div class="row">
+        <div class="q"><label for="adays${n}">Days between doses <code class="fld">RequiredDaysSinceLastDose</code></label><input type="number" min="0" data-k="reqDays" id="adays${n}"></div>
+        <div class="q"><label for="amd${n}">Most doses allowed <code class="fld">MaximumDose</code></label><input type="number" min="0" data-k="maxDose" id="amd${n}"></div>
+      </div>
+      <div class="row">
+        <div class="q"><label for="asmin${n}">Self-referral from dose <code class="fld">MultipleDoseSelfReferralMin</code></label><input type="number" min="0" data-k="srMin" id="asmin${n}"></div>
+        <div class="q"><label for="asmax${n}">Self-referral up to dose <code class="fld">MultipleDoseSelfReferralMax</code></label><input type="number" min="0" data-k="srMax" id="asmax${n}"></div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="q"><label for="alead${n}">Days' notice sites need (optional) <code class="fld">LeadDays</code></label><input type="number" min="0" data-k="leadDays" id="alead${n}"></div>
+      <div class="q"><label for="amdc${n}">Days ahead to search (optional) <code class="fld">MaximumDaysToCheck</code></label><input type="number" min="0" data-k="maxDaysToCheck" id="amdc${n}"></div>
+    </div>`;
+  const q=k=>el.querySelector(`[data-k="${k}"]`);
+  q('code').value=a.code||''; q('minAge').value=a.minAge??''; q('maxAge').value=a.maxAge??'';
+  q('coadmin').checked=!!a.coadmin; q('infant').checked=!!a.infant;
+  const d=a.doses||null; q('doses').checked=!!d;
+  q('reqDays').value=d?.reqDays??''; q('maxDose').value=d?.maxDose??''; q('srMin').value=d?.srMin??''; q('srMax').value=d?.srMax??'';
+  q('leadDays').value=a.leadDays??''; q('maxDaysToCheck').value=a.maxDaysToCheck??'';
+  el.querySelector('.rm').onclick=()=>{el.remove();update()};
+  $('#appts').appendChild(el);
+  return el;
+}
+function readAppts(){
+  return $$('#appts .appt').map(el=>{
+    const g=k=>el.querySelector(`[data-k="${k}"]`).value.trim();
+    const c=k=>el.querySelector(`[data-k="${k}"]`).checked;
+    return {code:g('code'),minAge:num(g('minAge')),maxAge:num(g('maxAge')),coadmin:c('coadmin'),infant:c('infant'),
+      doses:c('doses')?{reqDays:num(g('reqDays')),maxDose:num(g('maxDose')),srMin:num(g('srMin')),srMax:num(g('srMax'))}:null,
+      leadDays:num(g('leadDays')),maxDaysToCheck:num(g('maxDaysToCheck'))};
+  });
+}
+
+/* ---------- Read answers ---------- */
+function read(){
+  const vaccine=v('vaccine'), id=v('campaignId');
+  return {
+    vaccine,id,journeyExists:radio('journeyExists'),url:v('url'),
+    openDate:v('openDate'),openTime:v('openTime')||'08:00',closeDate:v('closeDate'),closeTime:v('closeTime')||'16:00',
+    campStart:v('campStart'),campEnd:v('campEnd'),firstBook:v('firstBook'),lastBook:v('lastBook'),
+    cohorts:readCohorts(),appts:readAppts(),
+    coadmin:$$('#coadmin input:checked').map(i=>i.value),coadminMinAge:num(v('coadminMinAge')),
+    group:radio('group'),groupMax:num(v('groupMax')),
+    booster:radio('booster'),boosterMin:num(v('boosterMin')),boosterAdv:num(v('boosterAdv')),
+    hideAnother:radio('hideAnother'),
+    journey:v('journey')||id,jv:num(v('jv'))||(radio('journeyExists')==='no'?1:null),
+    apptGroup:v('apptGroup')||vaccine.toUpperCase(),shuttered:v('shuttered'),daysToCheck:num(v('daysToCheck'))
+  };
+}
+
+/* ---------- Generate YAML ---------- */
+const q=s=>`'${String(s).replace(/'/g,"''")}'`;
+function generate(d){
+  const L=[], p=(i,s)=>L.push('  '.repeat(i)+s);
+  const item=(base,lines)=>lines.forEach(([r,t],i)=>p(base,(i===0?'- ':'  ')+'  '.repeat(r)+t));
+  L.push(`- CampaignId: ${d.id||'TODO'}`);
+  p(1,`Journey: ${d.journey||'TODO'}`);
+  if(d.jv) p(1,`JourneyVersion: ${d.jv}`);
+  p(1,'ServiceLifetime:');
+  p(2,`StartDateTimeUtc: ${d.openDate?`${d.openDate}T${d.openTime}:00Z`:'TODO'}`);
+  if(d.closeDate) p(2,`EndDateTimeUtc: ${d.closeDate}T${d.closeTime}:00Z`);
+  if(d.shuttered) p(2,`EntryPointShuttered: ${d.shuttered}`);
+  p(1,'Settings:');
+  p(2,`CampaignStartDate: ${d.campStart?q(d.campStart):'TODO'}`);
+  if(d.campEnd) p(2,`CampaignEndDate: ${q(d.campEnd)}`);
+  p(2,`FirstBookingDate: ${d.firstBook?q(d.firstBook):'TODO'}`);
+  if(d.lastBook) p(2,`LastBookingDate: ${q(d.lastBook)}`);
+  p(2,`AppointmentGroup: ${d.apptGroup?q(d.apptGroup):'TODO'}`);
+  if(d.group==='yes'&&d.groupMax) p(2,`GroupBookingMax: ${d.groupMax}`);
+
+  const ages=d.cohorts.filter(c=>c.rule==='age'&&(c.minAge!=null||c.maxAge!=null));
+  const dobs=d.cohorts.filter(c=>c.rule==='dob'&&(c.dobFrom||c.dobTo));
+  if(ages.some(c=>c.selfRef)) p(2,'SelfReferralEnabled: true');
+  if(ages.length){
+    p(2,'EligibleAgeRanges:');
+    ages.forEach(c=>{const ls=[];
+      if(c.minAge!=null) ls.push([0,`MinimumAge: ${c.minAge}`]);
+      if(c.maxAge!=null) ls.push([0,`MaximumAge: ${c.maxAge}`]);
+      if(c.selfRef) ls.push([0,'RequireSelfReferral: true']);
+      item(3,ls);});
+  }
+  if(dobs.length){
+    p(2,'AcceptedDobRanges:');
+    dobs.forEach(c=>{const ls=[[0,`MinimumDOB: ${c.dobFrom?q(c.dobFrom):'TODO'}`],[0,`MaximumDOB: ${c.dobTo?q(c.dobTo):'TODO'}`]];
+      if(c.dobEnd) ls.push([0,`ActiveEndDate: ${q(c.dobEnd)}`]);
+      item(3,ls);});
+  }
+  const appts=d.appts.filter(a=>a.code||a.minAge!=null||a.maxAge!=null);
+  if(appts.length){
+    p(2,'AppointmentTypes:');
+    appts.forEach(a=>{const ls=[[0,`Code: ${a.code?q(a.code):'TODO'}`]];
+      if(a.minAge!=null) ls.push([0,`MinimumAge: ${a.minAge}`]);
+      if(a.maxAge!=null) ls.push([0,`MaximumAge: ${a.maxAge}`]);
+      if(a.maxDaysToCheck!=null) ls.push([0,`MaximumDaysToCheck: ${a.maxDaysToCheck}`]);
+      const props=[]; if(a.infant) props.push('Infant'); if(a.coadmin) props.push('CoAdmin');
+      if(props.length){ls.push([0,'Properties:']);props.forEach(x=>ls.push([1,`- ${q(x)}`]));}
+      if(a.doses){const ds=[['RequiredDaysSinceLastDose',a.doses.reqDays],['MultipleDoseSelfReferralMin',a.doses.srMin],['MultipleDoseSelfReferralMax',a.doses.srMax],['MaximumDose',a.doses.maxDose]].filter(x=>x[1]!=null);
+        if(ds.length){ls.push([0,'DoseSettings:']);ds.forEach(([k,x])=>ls.push([1,`${k}: ${x}`]));}}
+      if(a.leadDays!=null){ls.push([0,'VaccineAvailabilitySettings:']);ls.push([1,`LeadDays: ${a.leadDays}`]);}
+      item(3,ls);});
+  }
+  if(d.coadmin.length&&d.coadminMinAge!=null) p(2,`MinimumAgeForCoAdmin: ${d.coadminMinAge}`);
+  p(2,'VaccineTypes:'); p(3,`- ${d.vaccine?q(d.vaccine):'TODO'}`);
+  if(d.coadmin.length){
+    p(2,'CoAdminVaccineTypes:');
+    d.coadmin.forEach(x=>item(3,[[0,`VaccineType: ${q(x)}`],[0,`Journey: ${q(x.toLowerCase())}`]]));
+  }
+  if(d.booster==='yes'){
+    if(d.boosterAdv!=null) p(2,`BoosterAdvancedBookingInDays: ${d.boosterAdv}`);
+    if(d.boosterMin!=null) p(2,`BoosterMinDays: ${d.boosterMin}`);
+  }
+  if(d.daysToCheck!=null) p(2,`NumberOfDaysToCheck: ${d.daysToCheck}`);
+  p(2,`NhsStartPageUrl: ${d.url?q(d.url):'TODO'}`);
+  if(d.hideAnother==='yes') p(2,'ShouldHideBookAnotherVaccineLink: true');
+  return L.join('\n');
+}
+
+/* ---------- Checks ---------- */
+function check(d){
+  const out=[], err=m=>out.push({l:'error',m}), warn=m=>out.push({l:'warn',m});
+  const need=[[d.id,'Add a short name for the campaign.'],[d.vaccine,'Say which vaccine this is for.'],[d.openDate,'Add the date the booking service opens.'],
+    [d.campStart,'Add the campaign start date.'],[d.firstBook,'Add the first appointment date.'],[d.apptGroup,'Add an appointment group.']];
+  need.forEach(([x,m])=>{if(!x)err(m)});
+  if(d.id&&!/^[a-z0-9-]+$/.test(d.id)) err('Short name should be lowercase letters, numbers or hyphens.');
+  if(!d.url) warn('No NHS website start page yet. Every live campaign has one.');
+  const lt=(a,b)=>a&&b&&a<b;
+  if(lt(d.firstBook,d.campStart)) err('First appointment date falls before the campaign starts.');
+  if(lt(d.lastBook,d.firstBook)) err('Last appointment date falls before the first.');
+  if(lt(d.campEnd,d.campStart)) err('Campaign ends before it starts.');
+  if(lt(d.closeDate,d.openDate)) err('Booking service closes before it opens.');
+  if(lt(d.closeDate,d.lastBook)) warn(`Service closes on ${d.closeDate}, before the last appointment date (${d.lastBook}). Nobody can book the final days.`);
+  if(lt(d.firstBook,d.openDate)) warn('First appointment date is before the service opens.');
+
+  if(!d.cohorts.length) err('Add at least one cohort so the journey knows who can book.');
+  d.cohorts.forEach((c,i)=>{const nm=c.name||`Cohort ${i+1}`;
+    if(c.rule==='age'){
+      if(c.minAge==null&&c.maxAge==null) err(`${nm}: add an age range.`);
+      if(c.minAge!=null&&c.maxAge!=null&&c.minAge>c.maxAge) err(`${nm}: "from" age is above "to" age.`);
+    } else if(c.rule==='dob'){
+      if(!c.dobFrom||!c.dobTo) err(`${nm}: add both ends of the date of birth window.`);
+      if(lt(c.dobTo,c.dobFrom)) err(`${nm}: date of birth window runs backwards.`);
+    }});
+
+  if(!d.appts.length) err('Add at least one appointment type, or suggest them from cohorts.');
+  d.appts.forEach((a,i)=>{const nm=a.code||`Appointment type ${i+1}`;
+    if(!a.code) err(`Appointment type ${i+1} needs a code.`);
+    if(a.minAge!=null&&a.maxAge!=null&&a.minAge>a.maxAge) err(`${nm}: "from" age is above "to" age.`);
+    let m=a.code.match(/:(\d+)_(\d+)$/);
+    if(m&&(+m[1]!==a.minAge||+m[2]!==a.maxAge)) warn(`${nm}: the code says ages ${m[1]} to ${m[2]}, but the type is set to ${a.minAge??'any'} to ${a.maxAge??'any'}. Confirm which is right.`);
+    m=a.code.match(/:(\d+)\+$/);
+    if(m&&(+m[1]!==a.minAge||a.maxAge!=null)) warn(`${nm}: the code says ${m[1]} and over, but the type is set to ${a.minAge??'any'} to ${a.maxAge??'any'}.`);
+    if(a.code&&d.apptGroup&&!a.code.toUpperCase().includes(d.apptGroup.toUpperCase())) warn(`${nm}: code doesn't include the appointment group ${d.apptGroup}.`);
+    if(a.doses&&a.doses.maxDose==null) warn(`${nm}: dose rules are on but no maximum dose is set.`);
+  });
+  const ov=(a1,b1,a2,b2)=>(a1??0)<=(b2??999)&&(a2??0)<=(b1??999);
+  d.cohorts.filter(c=>c.rule==='age'&&(c.minAge!=null||c.maxAge!=null)).forEach((c,i)=>{
+    if(d.appts.length&&!d.appts.some(a=>!a.coadmin&&ov(c.minAge,c.maxAge,a.minAge,a.maxAge)))
+      warn(`${c.name||'A cohort'} (ages ${c.minAge??0} to ${c.maxAge??'any'}) has no single-vaccine appointment type covering it.`);
+  });
+  const hasCo=d.appts.some(a=>a.coadmin);
+  if(hasCo&&!d.coadmin.length) err('Some appointment types are joint appointments, but section 5 lists no second vaccine.');
+  if(d.coadmin.length&&!hasCo) warn('Joint booking is on, but no appointment type is marked as a joint appointment.');
+  if(d.coadmin.length&&d.coadminMinAge==null) warn('Joint booking is on with no minimum age. Flu and RSV both set 18.');
+  if(d.vaccine&&d.coadmin.includes(d.vaccine)) err('A vaccine can\'t be co-administered with itself.');
+  if(d.group==='yes'&&(!d.groupMax||d.groupMax<2)) err('Group booking needs a maximum of 2 or more.');
+  if(d.booster==='yes'&&d.boosterMin==null) warn('Dose gap is on but no minimum days are set.');
+  return out;
+}
+
+function todo(d){
+  const t=[], j=d.journey||'<journey>', codes=d.appts.map(a=>a.code).filter(Boolean);
+  if(d.journeyExists==='no') t.push(`Build a new journey file, <code>${j}_v${d.jv||1}.yml</code>, with screens and content for this vaccine.`);
+  else t.push(`Confirm <code>${j}_v${d.jv||'?'}.yml</code> exists and its content suits this campaign.`);
+  if(codes.length) t.push(`Set up appointment codes in the booking system and site services: ${codes.map(c=>`<code>${esc(c)}</code>`).join(', ')}.`);
+  t.push('Add this entry to <code>campaigns.yml</code> and to each environment file: <code>.int</code>, <code>.staging</code>, <code>.demo</code>, <code>.development</code>, <code>.development.demo</code>.');
+  if(d.coadmin.length) t.push(`Check the ${d.coadmin.map(x=>x.toLowerCase()).join(' and ')} journey supports joint booking with ${d.vaccine||'this vaccine'}.`);
+  if(d.url) t.push('Make sure the NHS website start page is live and links to booking.');
+  if(d.cohorts.some(c=>c.selfRef)) t.push('Agree the content people see when they confirm they\'re eligible (self-referral).');
+  return t;
+}
+
+/* ---------- Render ---------- */
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+function highlight(y){
+  return y.split('\n').map(line=>{
+    let h=esc(line);
+    h=h.replace(/^(\s*-?\s*)([A-Za-z]+)(:)/,'$1<span class="yk">$2</span>$3');
+    h=h.replace(/('(?:[^']|'')*')/g,'<span class="ys">$1</span>');
+    h=h.replace(/\bTODO\b/g,'<span class="yd">TODO</span>');
+    return h;
+  }).join('\n');
+}
+function syncVisibility(d){
+  $$('#cohorts .cohort').forEach(el=>{const r=el.querySelector('[data-k="rule"]:checked')?.value||'age';
+    el.querySelectorAll('[data-when]').forEach(s=>s.hidden=s.dataset.when!==r);});
+  $$('#appts .appt').forEach(el=>{el.querySelector('[data-dose]').hidden=!el.querySelector('[data-k="doses"]').checked;});
+  $$('[data-show]').forEach(el=>{const s=el.dataset.show;
+    if(s==='coadmin') el.hidden=!d.coadmin.length;
+    else {const [n,x]=s.split('=');el.hidden=radio(n)!==x;}});
+  if(!$('#cohorts').children.length&&!$('#cohorts .empty')){}
+}
+let lastYaml='';
+function update(){
+  const d=read();
+  syncVisibility(d);
+  lastYaml=generate(d);
+  $('#yaml').innerHTML=highlight(lastYaml);
+  const iss=check(d), e=iss.filter(i=>i.l==='error').length, w=iss.length-e;
+  const st=$('#status');
+  if(e){st.className='pill bad';st.textContent=`${e} to fix${w?`, ${w} to check`:''}`;}
+  else if(w){st.className='pill warn';st.textContent=`${w} to check`;}
+  else {st.className='pill good';st.textContent='Ready to hand over';}
+  $('#issues').innerHTML=iss.length?iss.map(i=>`<li class="${i.l}">${esc(i.m)}</li>`).join(''):'<li class="warn" style="background:var(--good-soft);border-color:var(--good)">No problems found against the schema or the checks above.</li>';
+  $('#todo').innerHTML=todo(d).map(x=>`<li><span>${x}</span></li>`).join('');
+}
+
+/* ---------- Examples (from campaigns.yml) ---------- */
+const EX={
+  flu:{vaccine:'Flu',id:'flu',journeyExists:'yes',jv:13,url:'https://www.nhs.uk/conditions/vaccinations/book-flu-vaccination/',
+    openDate:'2025-09-01',openTime:'08:00',closeDate:'2026-03-31',closeTime:'16:00',campStart:'2025-09-01',campEnd:'2026-03-31',firstBook:'2025-10-01',lastBook:'2026-03-31',
+    cohorts:[{name:'Adults 18 to 64 who confirm they are eligible',rule:'age',minAge:18,maxAge:64,selfRef:'yes'},{name:'Adults 65 and over',rule:'age',minAge:65},{name:'Children aged 2 to 3',rule:'dob',dobFrom:'2021-09-01',dobTo:'2023-08-31',dobEnd:'2026-03-31'}],
+    appts:[{code:'FLU:2_3',minAge:2,maxAge:4,maxDaysToCheck:30,infant:true,doses:{reqDays:28,srMin:1,srMax:1,maxDose:2}},{code:'FLU:18_64',minAge:18,maxAge:64},{code:'FLU:65+',minAge:65},{code:'COVID_FLU:18_64',minAge:18,maxAge:64,coadmin:true},{code:'COVID_FLU:65+',minAge:65,coadmin:true}],
+    coadmin:['Covid'],coadminMinAge:18,group:'yes',groupMax:2,booster:'no',hideAnother:'no',apptGroup:'FLU'},
+  covid:{vaccine:'Covid',id:'covid',journeyExists:'yes',jv:15,url:'https://www.nhs.uk/conditions/coronavirus-covid-19/coronavirus-vaccination/book-coronavirus-vaccination/',
+    openDate:'2026-04-07',openTime:'08:00',closeDate:'2026-06-30',closeTime:'16:00',campStart:'2026-04-07',campEnd:'2026-06-30',firstBook:'2026-04-13',lastBook:'2026-06-30',
+    cohorts:[{name:'Ages 5 to 74 who confirm they are eligible',rule:'age',minAge:5,maxAge:74,selfRef:'yes'},{name:'Adults 75 and over',rule:'age',minAge:75}],
+    appts:[{code:'COVID:5_11',minAge:5,maxAge:11,leadDays:4},{code:'COVID:12_17',minAge:12,maxAge:17,leadDays:4},{code:'COVID:18+',minAge:18}],
+    coadmin:[],group:'yes',groupMax:2,booster:'yes',boosterMin:91,boosterAdv:30,hideAnother:'no',apptGroup:'COVID'},
+  rsv:{vaccine:'Rsv',id:'rsv',journeyExists:'yes',jv:8,url:'https://www.nhs.uk/nhs-services/vaccination-and-booking-services/book-or-cancel-an-rsv-vaccination/',
+    openDate:'2024-09-24',openTime:'08:00',closeDate:'',campStart:'2024-09-24',campEnd:'',firstBook:'2024-09-25',lastBook:'2099-12-15',
+    cohorts:[{name:'Up to 74 who confirm they are eligible',rule:'age',maxAge:74,selfRef:'yes'},{name:'Adults 75 and over',rule:'age',minAge:75}],
+    appts:[{code:'RSV:Adult'},{code:'COVID_RSV:18+',minAge:18,coadmin:true}],
+    coadmin:['Covid'],coadminMinAge:18,group:'yes',groupMax:2,booster:'no',hideAnother:'no',apptGroup:'RSV'},
+  menb:{vaccine:'MenB',id:'menb',journeyExists:'yes',jv:1,url:'https://www.nhs.uk/nhs-services/vaccination-and-booking-services/book-menb-vaccination/',
+    openDate:'2026-07-13',openTime:'08:00',closeDate:'',campStart:'2026-07-13',campEnd:'',firstBook:'2026-07-21',lastBook:'',
+    cohorts:[{name:'Young people born Sep 2007 to Aug 2008',rule:'dob',dobFrom:'2007-09-01',dobTo:'2008-08-31'}],
+    appts:[{code:'MENB:YP',minAge:17}],
+    coadmin:[],group:'no',booster:'no',hideAnother:'yes',apptGroup:'MENB'},
+  blank:{vaccine:'',id:'',journeyExists:'',cohorts:[{rule:'age'}],appts:[],coadmin:[],group:'',booster:'',hideAnother:''}
+};
+function load(k){
+  const e=EX[k];
+  ['vaccine','url','openDate','closeDate','campStart','campEnd','firstBook','lastBook','coadminMinAge','boosterMin','boosterAdv'].forEach(f=>setV(f,e[f]));
+  setV('campaignId',e.id); setV('openTime',e.openTime||'08:00'); setV('closeTime',e.closeTime||'16:00');
+  setV('groupMax',e.groupMax||2); setV('jv',e.jv); setV('journey',''); setV('apptGroup',e.apptGroup||''); setV('shuttered','service-closed'); setV('daysToCheck','');
+  setRadio('journeyExists',e.journeyExists); setRadio('group',e.group); setRadio('booster',e.booster); setRadio('hideAnother',e.hideAnother);
+  $$('#coadmin input').forEach(i=>i.checked=e.coadmin.includes(i.value));
+  $('#cohorts').innerHTML=''; e.cohorts.forEach(c=>cohortCard(c));
+  $('#appts').innerHTML=''; e.appts.forEach(a=>apptCard(a));
+  $$('#loader .chip').forEach(b=>b.setAttribute('aria-pressed',b.dataset.ex===k?'true':'false'));
+  update();
+}
+
+/* ---------- Events ---------- */
+$('#form').addEventListener('input',update);
+$('#form').addEventListener('change',update);
+$('#addCohort').onclick=()=>{cohortCard({rule:'age'});update()};
+$('#addAppt').onclick=()=>{apptCard();update()};
+$('#suggestAppts').onclick=()=>{
+  const d=read(), g=d.apptGroup||'CODE', have=new Set(d.appts.map(a=>a.code));
+  d.cohorts.forEach(c=>{let a;
+    if(c.rule==='age'&&(c.minAge!=null||c.maxAge!=null)){const mn=c.minAge??0;a={code:c.maxAge!=null?`${g}:${mn}_${c.maxAge}`:`${g}:${mn}+`,minAge:c.minAge,maxAge:c.maxAge};}
+    else if(c.rule==='dob') a={code:`${g}:DOB`};
+    if(a&&!have.has(a.code)){apptCard(a);have.add(a.code);}
+    if(a&&d.coadmin.length&&c.rule==='age'&&(c.minAge??0)>=(d.coadminMinAge??0)) d.coadmin.forEach(x=>{
+      const code=`${x.toUpperCase()}_${a.code}`; if(!have.has(code)){apptCard({...a,code,coadmin:true});have.add(code);}});
+  });
+  update();
+};
+$('#loader').addEventListener('click',e=>{const b=e.target.closest('[data-ex]');if(b)load(b.dataset.ex)});
+$('#showFields').addEventListener('change',e=>document.body.classList.toggle('show-fields',e.target.checked));
+document.body.classList.add('show-fields');
+$('#copy').onclick=async()=>{
+  const b=$('#copy');
+  try{await navigator.clipboard.writeText(lastYaml);b.textContent='Copied';}
+  catch{const r=document.createRange();r.selectNodeContents($('#yaml'));const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selected, press Ctrl+C';}
+  setTimeout(()=>b.textContent='Copy',1800);
+};
+load('flu');
+})();
+</script>
+
+</body></html>
