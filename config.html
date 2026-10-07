@@ -154,10 +154,10 @@ ul.todo li::before{content:"";width:13px;height:13px;border:1.5px solid var(--mu
             <input type="text" id="campaignId" placeholder="e.g. flu">
           </div>
         </div>
-        <p class="hint tight">Lowercase, no spaces. The journey uses the same name unless the dev team sets another.</p>
+        <p class="hint tight">Use lowercase letters and no spaces, for example <code>flu</code>. The dev team uses it to name the booking journey.</p>
         <fieldset class="q">
           <legend>Does a booking journey already exist for this vaccine? <code class="fld">Journey</code></legend>
-          <p class="hint">A new vaccine needs its own journey file, with screens and content, before it can go live.</p>
+          <p class="hint">If this is a new vaccine, the dev team needs to build its booking screens before it can go live.</p>
           <div class="seg"><label><input type="radio" name="journeyExists" value="yes">Yes, reuse it</label><label><input type="radio" name="journeyExists" value="no">No, it needs building</label></div>
         </fieldset>
         <div class="q">
@@ -168,7 +168,7 @@ ul.todo li::before{content:"";width:13px;height:13px;border:1.5px solid var(--mu
 
       <section class="s">
         <div class="s-head"><span class="s-num">2</span><h2>Key dates</h2></div>
-        <p class="s-sub">Times are UTC. During British Summer Time, 08:00 UTC is 09:00 in the UK.</p>
+        <p class="s-sub">Enter times in UTC. From late March to late October, UK time is one hour ahead, so 08:00 UTC is 9am in the UK.</p>
         <div class="row">
           <div class="q"><label for="openDate">Booking opens <code class="fld">StartDateTimeUtc</code></label><input type="date" id="openDate"></div>
           <div class="q"><label for="openTime">Time (UTC)</label><input type="time" id="openTime" value="08:00"></div>
@@ -177,7 +177,7 @@ ul.todo li::before{content:"";width:13px;height:13px;border:1.5px solid var(--mu
           <div class="q"><label for="closeDate">Booking closes <code class="fld">EndDateTimeUtc</code></label><input type="date" id="closeDate"></div>
           <div class="q"><label for="closeTime">Time (UTC)</label><input type="time" id="closeTime" value="16:00"></div>
         </div>
-        <p class="hint tight">Leave the close date blank if the service stays open, as RSV does.</p>
+        <p class="hint tight">Leave this blank if booking stays open all year, like RSV.</p>
         <div class="row">
           <div class="q"><label for="campStart">Campaign starts <code class="fld">CampaignStartDate</code></label><input type="date" id="campStart"></div>
           <div class="q"><label for="campEnd">Campaign ends <code class="fld">CampaignEndDate</code></label><input type="date" id="campEnd"></div>
@@ -190,14 +190,14 @@ ul.todo li::before{content:"";width:13px;height:13px;border:1.5px solid var(--mu
 
       <section class="s">
         <div class="s-head"><span class="s-num">3</span><h2>Who can book</h2></div>
-        <p class="s-sub">One row per cohort, set by age or by a date of birth window. Cohorts who confirm their own eligibility, such as at-risk groups, need self-referral.</p>
+        <p class="s-sub">Add one row for each group of people who can book, set by age or by date of birth. Some groups tell us they qualify, such as people with a health condition. For those, answer yes to "confirm they're eligible".</p>
         <div id="cohorts" style="display:grid;gap:12px"></div>
         <div class="btn-row"><button type="button" class="btn" id="addCohort">Add a cohort</button></div>
       </section>
 
       <section class="s">
         <div class="s-head"><span class="s-num">4</span><h2>Appointment types</h2></div>
-        <p class="s-sub">Each type needs a code the booking system and sites already recognise. Leave the code blank if you don't have it. The booking team confirms codes.</p>
+        <p class="s-sub">Sites use these codes to set up their appointments. If you don't know a code, leave it blank and the booking team will add it.</p>
         <div id="appts" style="display:grid;gap:12px"></div>
         <div class="btn-row">
           <button type="button" class="btn" id="addAppt">Add an appointment type</button>
@@ -206,9 +206,10 @@ ul.todo li::before{content:"";width:13px;height:13px;border:1.5px solid var(--mu
       </section>
 
       <section class="s">
-        <div class="s-head"><span class="s-num">5</span><h2>Joint appointments</h2></div>
+        <div class="s-head"><span class="s-num">5</span><h2>Co-admin appointments</h2></div>
+        <p class="s-sub">Co-admin means giving two different vaccines in the same appointment, such as flu and COVID.</p>
         <fieldset class="q">
-          <legend>Can people book this with another vaccine in the same appointment? <code class="fld">CoAdminVaccineTypes</code></legend>
+          <legend>Can people get this with another vaccine in the same appointment? <code class="fld">CoAdminVaccineTypes</code></legend>
           <div class="checks" id="coadmin">
             <label><input type="checkbox" value="Covid">COVID</label>
             <label><input type="checkbox" value="Flu">Flu</label>
@@ -216,19 +217,20 @@ ul.todo li::before{content:"";width:13px;height:13px;border:1.5px solid var(--mu
           </div>
         </fieldset>
         <div class="q" data-show="coadmin">
-          <label for="coadminMinAge">Youngest age for a joint appointment <code class="fld">MinimumAgeForCoAdmin</code></label>
+          <label for="coadminMinAge">Youngest age for a co-admin appointment <code class="fld">MinimumAgeForCoAdmin</code></label>
           <input type="number" id="coadminMinAge" min="0">
         </div>
       </section>
 
       <section class="s">
-        <div class="s-head"><span class="s-num">6</span><h2>Booking for other people</h2></div>
+        <div class="s-head"><span class="s-num">6</span><h2>Joint appointments</h2></div>
+        <p class="s-sub">A joint appointment is two or more people, such as a couple, booked into the same appointment by one person.</p>
         <fieldset class="q">
-          <legend>Can one person book for others in the same visit? <code class="fld">GroupBookingMax</code></legend>
+          <legend>Can one person book for other people in the same appointment? <code class="fld">GroupBookingMax</code></legend>
           <div class="seg"><label><input type="radio" name="group" value="yes">Yes</label><label><input type="radio" name="group" value="no">No</label></div>
         </fieldset>
         <div class="q" data-show="group=yes">
-          <label for="groupMax">Most people in one booking, including the booker</label>
+          <label for="groupMax">Most people in one joint appointment, including the person booking</label>
           <input type="number" id="groupMax" min="2" value="2">
         </div>
       </section>
@@ -249,7 +251,7 @@ ul.todo li::before{content:"";width:13px;height:13px;border:1.5px solid var(--mu
         <div class="s-head"><span class="s-num">8</span><h2>After booking</h2></div>
         <fieldset class="q">
           <legend>Hide the "book another vaccination" link on the confirmation page? <code class="fld">ShouldHideBookAnotherVaccineLink</code></legend>
-          <p class="hint">MenB hides it because its cohort is unlikely to be eligible for other vaccines.</p>
+          <p class="hint">MenB hides it because people booking MenB are unlikely to be eligible for other vaccines.</p>
           <div class="seg"><label><input type="radio" name="hideAnother" value="yes">Yes, hide it</label><label><input type="radio" name="hideAnother" value="no">No</label></div>
         </fieldset>
       </section>
@@ -265,7 +267,7 @@ ul.todo li::before{content:"";width:13px;height:13px;border:1.5px solid var(--mu
             <div class="q"><label for="apptGroup">Appointment group <code class="fld">AppointmentGroup</code></label><input type="text" id="apptGroup" placeholder="Vaccine in capitals"></div>
             <div class="q"><label for="shuttered">Page shown when closed <code class="fld">EntryPointShuttered</code></label><input type="text" id="shuttered" value="service-closed"></div>
           </div>
-          <div class="q"><label for="daysToCheck">Days of availability to search <code class="fld">NumberOfDaysToCheck</code></label><input type="number" id="daysToCheck" min="0"><p class="hint">Optional. No current campaign sets this.</p></div>
+          <div class="q"><label for="daysToCheck">Days of availability to search <code class="fld">NumberOfDaysToCheck</code></label><input type="number" id="daysToCheck" min="0"><p class="hint">Optional. No current campaign uses this.</p></div>
         </div>
       </details>
     </form>
@@ -347,7 +349,7 @@ function apptCard(a={}){
       <div class="q"><label for="amax${n}">To age <code class="fld">MaximumAge</code></label><input type="number" min="0" data-k="maxAge" id="amax${n}" placeholder="Any"></div>
     </div>
     <fieldset class="q"><legend>This appointment is <code class="fld">Properties</code></legend>
-      <div class="checks"><label><input type="checkbox" data-k="coadmin">A joint appointment with another vaccine</label><label><input type="checkbox" data-k="infant">For young children</label></div></fieldset>
+      <div class="checks"><label><input type="checkbox" data-k="coadmin">Co-admin (two vaccines in one appointment)</label><label><input type="checkbox" data-k="infant">For young children</label></div></fieldset>
     <fieldset class="q"><legend>More than one dose?</legend>
       <div class="checks"><label><input type="checkbox" data-k="doses">Yes, set dose rules <code class="fld">DoseSettings</code></label></div></fieldset>
     <div class="sub-q" data-dose>
@@ -526,11 +528,11 @@ function check(d){
     }});
 
   const hasCo=d.appts.some(a=>a.coadmin);
-  if(hasCo&&!d.coadmin.length) err('Some appointment types are joint appointments, but section 5 lists no second vaccine.');
-  if(d.coadmin.length&&!hasCo) warn('Joint booking is on, but no appointment type is marked as a joint appointment.');
-  if(d.coadmin.length&&d.coadminMinAge==null) warn('Joint booking is on with no minimum age. Flu and RSV both set 18.');
-  if(d.vaccine&&d.coadmin.some(x=>x.toLowerCase()===d.vaccine.toLowerCase())) err('A vaccine can\'t be a joint appointment with itself.');
-  if(d.group==='yes'&&(!d.groupMax||d.groupMax<2)) err('Group booking needs a maximum of 2 or more.');
+  if(hasCo&&!d.coadmin.length) err('Some appointment types are co-admin, but section 5 lists no second vaccine.');
+  if(d.coadmin.length&&!hasCo) warn('Co-admin is on, but no appointment type is marked as co-admin.');
+  if(d.coadmin.length&&d.coadminMinAge==null) warn('Co-admin is on with no minimum age. Flu and RSV both set 18.');
+  if(d.vaccine&&d.coadmin.some(x=>x.toLowerCase()===d.vaccine.toLowerCase())) err('A vaccine can\'t be co-admin with itself.');
+  if(d.group==='yes'&&(!d.groupMax||d.groupMax<2)) err('Joint appointments need a maximum of 2 or more people.');
   if(d.booster==='yes'&&d.boosterMin==null) warn('Dose gap is on but no minimum days are set.');
   return out;
 }
@@ -541,8 +543,8 @@ function todo(d){
   else t.push(`Confirm <code>${esc(j)}_v${d.jv||'?'}.yml</code> exists and its content suits this campaign.`);
   if(codes.length) t.push(`Confirm these codes exist in the booking system and site services: ${codes.map(c=>`<code>${esc(c)}</code>`).join(', ')}.`);
   if(noCode) t.push(`Agree codes for ${noCode} appointment type${noCode>1?'s':''} with the booking team.`);
-  if(d.coadmin.length) t.push(`Confirm the journey names for joint booking. The draft assumes ${d.coadmin.map(x=>`<code>${esc(x.toLowerCase())}</code>`).join(' and ')}, and that ${d.coadmin.length>1?'those journeys support':'that journey supports'} joint booking with ${esc(d.vaccine||'this vaccine')}.`);
-  if(d.group==='no') t.push('Confirm what the system does when <code>GroupBookingMax</code> isn\'t set, so "No" means no group booking.');
+  if(d.coadmin.length) t.push(`Confirm the journey names for co-admin. The draft assumes ${d.coadmin.map(x=>`<code>${esc(x.toLowerCase())}</code>`).join(' and ')}, and that ${d.coadmin.length>1?'those journeys support':'that journey supports'} co-admin with ${esc(d.vaccine||'this vaccine')}.`);
+  if(d.group==='no') t.push('Confirm what the system does when <code>GroupBookingMax</code> isn\'t set, so "No" means no joint appointments.');
   if(d.cohorts.some(c=>c.rule==='age'&&c.selfRef)) t.push('Agree the content people see when they confirm their own eligibility.');
   return t;
 }
