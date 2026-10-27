@@ -1,0 +1,5 @@
+source-review.md
+source-snapshot.json
+source-status.json
+__pycache__/
+.DS_Store

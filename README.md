@@ -4,27 +4,6 @@ A complete dependency-free vaccination discussion prototype, redesigned from `st
 
 **Not clinically approved. This build is for private design review, not a public clinical service.**
 
-## Run
-
-Open `dist/index.html`, or serve the `dist/` directory using any static web server. No npm install or build step is required. Tests use Node 18+:
-
-```sh
-node --test tests/*.test.cjs
-```
-
-## Files
-
-- `dist/index.html`: semantic shell, header and footer.
-- `dist/styles.css`: responsive design tokens and components, print layout, focus and reduced-motion styles.
-- `dist/app.js`: landing page, England scope gate, branching questions, validation, answer editing, results, print, privacy and source pages.
-- `dist/changes.js`: selected, dated programme updates; audience/search/status filters and review warnings.
-- `dist/rules.js`: fixed rule logic, content, source references and explicit unreviewed status.
-- `dist/sources.json`: source-monitoring register. Includes checker references and exact tracker documents. Keep checker references aligned with SOURCE_REGISTER and tracker documents aligned with changes.js.
-- `dist/_headers`: suggested Cloudflare-compatible security headers. Other hosting platforms need equivalent configuration.
-- `tests/rules.test.cjs`: boundary, child-scope, deduplication and regression checks.
-- `scripts/monitor-sources.py`: source/PDF change detector; never rewrites clinical logic.
-- `.github/workflows/`: test and daily source-review workflows, usable after copying the project into a GitHub repository and enabling Actions.
-
 ## Programme tracker (hidden at launch)
 
 The tracker is switched off with `FEATURES.tracker=false` at the top of `dist/app.js`. `changes.js` and its tests stay in the repo. The four tracker documents in `sources.json` carry `"paused": true`, so the source monitor skips them. To re-enable: set the flag to `true`, remove `paused` from those entries, restore the nav and footer links in `index.html`, and review every entry against its source.

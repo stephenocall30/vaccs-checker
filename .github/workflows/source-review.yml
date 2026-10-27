@@ -1,0 +1,40 @@
+name: Review vaccination source changes
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '19 7 1 * *'
+permissions:
+  contents: read
+  issues: write
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Compare published sources with reviewed baseline
+        run: python scripts/monitor-sources.py
+      - name: Keep report and candidate baseline
+        uses: actions/upload-artifact@v4
+        with:
+          name: vaccination-source-review
+          path: |
+            source-review.md
+            source-snapshot.json
+            source-status.json
+      - name: Open one review issue if attention is needed
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          count=$(python -c "import json; print(json.load(open('source-status.json'))['changes'])")
+          if [ "$count" -gt 0 ]; then
+            existing=$(gh issue list --state open --search '"Vaccs: source review required" in:title' --json number --jq '.[0].number // empty')
+            if [ -z "$existing" ]; then
+              gh issue create --title 'Vaccs: source review required' --body-file source-review.md
+            fi
+            echo 'A source review is required. Download this run’s report for the latest findings.'
+            exit 1
+          fi
