@@ -1,4 +1,4 @@
-# Vaccination Eligibility Checker (Prototype)
+# Vaccination Checker (Prototype)
 
 A quick self-serve tool that asks 6 questions and tells you which NHS vaccinations might be worth looking into, with links to the relevant NHS pages.
 
