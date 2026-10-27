@@ -1,38 +1,78 @@
-# Vaccination Checker (Prototype)
+# Vaccs — vaccination checker
 
-A quick self-serve tool that asks 6 questions and tells you which NHS vaccinations might be worth looking into, with links to the relevant NHS pages.
+A complete dependency-free vaccination discussion prototype, redesigned from `stephenocall30/vaccs-checker` at `382d350`. Independent mint, forest-green and teal visual identity; no NHS styling or logo. `config.html` is excluded.
 
-**[Try it here][(https://stephenocall30.github.io/vaccs-checker/)]**
+**Not clinically approved. This build is for private design review, not a public clinical service.**
 
-⚠️ **This is a prototype, not an NHS service.** It's not medical advice. Talk to your GP about anything it flags.
+## Run
 
-## What it does
+Open `dist/index.html`, or serve the `dist/` directory using any static web server. No npm install or build step is required. Tests use Node 18+:
 
-- Asks about age, pregnancy, immune status, long-term conditions, circumstances, and work
-- Maps answers against the eligibility rules on the [NHS vaccinations schedule page](https://www.nhs.uk/vaccinations/nhs-vaccinations-and-when-to-have-them/)
-- Shows results grouped by *why* they apply — routine for your age, pregnancy, health answers, or occupational
-- Every recommendation carries tags showing exactly which answer triggered it, so the logic is traceable rather than a black box
+```sh
+node --test tests/*.test.cjs
+```
 
-## Design decisions worth knowing
+## Files
 
-- **Pregnancy timing is calculated** — enter your weeks and it tells you what's due now vs coming up
-- **"Not sure" is a valid answer** for immune status — relevant vaccines still show, flagged as "confirm with GP" instead of pretending certainty
-- **Occupational recommendations are indicative only** — real eligibility sits with employer occupational health and the Green Book, and the tool says so rather than faking authority
-- **Under-18s get a schedule-check prompt** rather than full per-dose childhood logic — deliberate scoping call for a high-level tool
+- `dist/index.html`: semantic shell, header and footer.
+- `dist/styles.css`: responsive design tokens and components, print layout, focus and reduced-motion styles.
+- `dist/app.js`: landing page, England scope gate, branching questions, validation, answer editing, results, print, privacy and source pages.
+- `dist/changes.js`: selected, dated programme updates; audience/search/status filters and review warnings.
+- `dist/rules.js`: fixed rule logic, content, source references and explicit unreviewed status.
+- `dist/sources.json`: source-monitoring register. Includes checker references and exact tracker documents. Keep checker references aligned with SOURCE_REGISTER and tracker documents aligned with changes.js.
+- `dist/_headers`: suggested Cloudflare-compatible security headers. Other hosting platforms need equivalent configuration.
+- `tests/rules.test.cjs`: boundary, child-scope, deduplication and regression checks.
+- `scripts/monitor-sources.py`: source/PDF change detector; never rewrites clinical logic.
+- `.github/workflows/`: test and daily source-review workflows, usable after copying the project into a GitHub repository and enabling Actions.
 
-## Tech
+## Programme tracker (hidden at launch)
 
-- `index.html` / `styles.css` / `script.js` — plain three-file split, zero dependencies, no build step
-- Vanilla JS rules engine — each recommendation is `{vaccine, group, reasons[], notes[]}`, deduped so one vaccine triggered by multiple answers shows once with all its reasons
-- CSS transitions only, `prefers-reduced-motion` respected
-- NHS design system colours, keyboard focus states throughout
+The tracker is switched off with `FEATURES.tracker=false` at the top of `dist/app.js`. `changes.js` and its tests stay in the repo. The four tracker documents in `sources.json` carry `"paused": true`, so the source monitor skips them. To re-enable: set the flag to `true`, remove `paused` from those entries, restore the nav and footer links in `index.html`, and review every entry against its source.
 
-## Running it
+## Included behaviour
 
-Open `index.html` in a browser, or serve the folder. No build step, no npm install.
+- Refreshed v0.3 interface across the landing page, checker, results and information pages; rule engine remains v0.2.0.
+- Searchable programme tracker with audience/status filters, source links, before/after explanations and edit history.
+- Recommendations, confirmed programme starts and introduced changes have distinct labels. Passing a date never automatically promotes a status.
+- Home page and clear independent-prototype status.
+- Country gate; directs people outside England to their relevant health service.
+- Self / another adult / child flows; age, pregnancy, immune status, conditions, work and student questions.
+- Form validation, back navigation, review and change answers, branch pruning and reset.
+- Reason-linked discussion cards with official guidance and rule IDs; no unsupported booking promises.
+- PDF via browser Print / Save as PDF. Printed results retain prototype status, generation date and rules version.
+- Source register, explanation of limitations, privacy information and error-report link.
+- No external assets, analytics, cookies or answer storage. Generic route names only in URLs; answers are in page memory. Refresh or reset clears application memory; browser autofill/tab restoration remains browser-controlled.
 
-## Caveats
+## Deliberate clinical boundaries
 
-- Built from a snapshot of the NHS schedule page (July 2026) — eligibility rules change, this file doesn't update itself
-- England-focused; schedules differ slightly in Scotland, Wales and NI
-- Some rules can't be derived from age alone (e.g. the shingles "turned 65 on or after 1 Sept 2023" cutoff) — the tool caveats these inline rather than guessing
+Children receive official schedule signposting, not calculated infant dosing or catch-up instructions. Generic catch-up wording was removed from this flow. Work alone does not assert COVID campaign entitlement. The unverified student MenB rule is disabled. Shingles for immunosuppressed adults is a qualified discussion prompt from 18, not a judgement of severity. Seasonal calendar arrays are not used to assert availability. The misleading “already had” whole-course completion control is removed.
+
+These changes do **not** constitute a complete clinical audit. The original adult rules still need source-section mapping, programme/effective-date validation, review of medical exclusions and independent clinical approval. Do not treat links to public NHS pages as evidence of clinical sign-off. Publication as a reliable health tool also needs medical-device applicability assessment, operational ownership, accessibility/browser QA, and legal/privacy review.
+
+## Maintaining rules
+
+1. Give each active rule a stable ID. Preserve IDs in result explanations.
+2. Record exact source version and section, nation/programme, effective dates, reviewer, approval date, review due date and tests. `metadataForRule()` currently makes missing approval explicit; complete this record during clinical review.
+3. Keep JCVI recommendations separate from implemented programme policy and live availability.
+4. Add a regression test for every correction and relevant age/date boundary.
+5. Have the change independently reviewed; publish a version and changelog. Never auto-approve clinical rules using an LLM or scraper.
+
+### Source monitoring setup
+
+The private hosted preview does not run GitHub Actions. To enable:
+
+1. Copy the source into the intended GitHub repo (preserving its own remote), enable Actions and review workflow permissions. Do not publish `.openai/` from this Site into an unrelated repository.
+2. Run `python scripts/monitor-sources.py`. The initial run creates a report and candidate snapshot; absent baselines and fetch errors are reported.
+3. Read the report and source documents. Then run `python scripts/monitor-sources.py --accept-baseline` and commit `sources-baseline.json` **only after review**. Accepting a content baseline is not clinical approval.
+4. The daily workflow compares normalised source text and directly linked PDF hashes. It opens one issue if attention is required, stores the full report as an artifact and fails visibly. An existing issue is not silently closed by the workflow.
+5. Review differences, update affected rules and tests, and accept a new baseline deliberately. Source reformatting can produce false positives. Newsletters and programme-owner oversight remain necessary; this is not a guaranteed complete change feed.
+
+## Deployment
+
+Serve `dist/` over HTTPS. The Sites copy is private. The build is indexable: the noindex tag was removed on 27 Oct 2026 ahead of public launch. A CSP `<meta>` tag in `index.html` backs up `_headers` on hosts that ignore it (it cannot set `frame-ancestors`). `_headers` is host-specific: verify actual response headers when moving platforms. No database or environment secrets are needed.
+
+For GitHub Pages, deploy the **contents of `dist/`**, not the project root; use a deployment branch or Pages artifact workflow. Keep tests and monitoring scripts in the source repository. Retain the original project's licence/ownership terms: no new licence is asserted here.
+
+## Verification
+
+Node syntax checks, rule regression tests and tracker filtering/date-boundary tests are included. Browser QA in the build environment was blocked by the browser URL security policy, so visual rendering, keyboard interaction, mobile layout and print preview need human verification before wider use.

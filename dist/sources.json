@@ -1,0 +1,201 @@
+{
+  "version": "0.3.0",
+  "jurisdiction": "England",
+  "status": "prototype",
+  "preparedOn": "2026-10-22",
+  "clinicalReviewedAt": null,
+  "clinicalReviewer": null,
+  "reviewDue": "2026-11-22",
+  "sources": [
+    {
+      "id": "schedule",
+      "title": "Routine vaccination schedule",
+      "url": "https://www.nhs.uk/vaccinations/nhs-vaccinations-and-when-to-have-them/",
+      "baselineSha256": null
+    },
+    {
+      "id": "greenbook",
+      "title": "UKHSA \u00b7 The Green Book",
+      "url": "https://www.gov.uk/government/collections/immunisation-against-infectious-disease-the-green-book",
+      "baselineSha256": null
+    },
+    {
+      "id": "jcvi",
+      "title": "JCVI \u00b7 Current advice",
+      "url": "https://www.gov.uk/government/collections/jcvi-current-advice-and-recommendations",
+      "baselineSha256": null
+    },
+    {
+      "id": "updates",
+      "title": "UKHSA \u00b7 Vaccine Update",
+      "url": "https://www.gov.uk/government/collections/vaccine-update",
+      "baselineSha256": null
+    },
+    {
+      "id": "flu",
+      "title": "Flu vaccine",
+      "url": "https://www.nhs.uk/vaccinations/flu-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "pneumo",
+      "title": "Pneumococcal vaccine",
+      "url": "https://www.nhs.uk/vaccinations/pneumococcal-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "shingles",
+      "title": "Shingles vaccine",
+      "url": "https://www.nhs.uk/vaccinations/shingles-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "rsv",
+      "title": "RSV vaccine",
+      "url": "https://www.nhs.uk/vaccinations/rsv-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "covid",
+      "title": "COVID-19 vaccine",
+      "url": "https://www.nhs.uk/vaccinations/covid-19-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "fluPreg",
+      "title": "Flu vaccine in pregnancy",
+      "url": "https://www.nhs.uk/pregnancy/keeping-well/flu-jab/",
+      "baselineSha256": null
+    },
+    {
+      "id": "wcough",
+      "title": "Whooping cough vaccine",
+      "url": "https://www.nhs.uk/pregnancy/keeping-well/whooping-cough-vaccination/",
+      "baselineSha256": null
+    },
+    {
+      "id": "rsvPreg",
+      "title": "RSV vaccine in pregnancy",
+      "url": "https://www.nhs.uk/vaccinations/rsv-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "menacwy",
+      "title": "MenACWY vaccine",
+      "url": "https://www.nhs.uk/vaccinations/menacwy-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "menb",
+      "title": "MenB vaccine",
+      "url": "https://www.nhs.uk/vaccinations/menb-vaccine-for-children/",
+      "baselineSha256": null
+    },
+    {
+      "id": "mmr",
+      "title": "MMR vaccine",
+      "url": "https://www.nhs.uk/vaccinations/mmr-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "hpv",
+      "title": "HPV vaccine",
+      "url": "https://www.nhs.uk/vaccinations/hpv-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "hepb",
+      "title": "Hepatitis B vaccine",
+      "url": "https://www.nhs.uk/vaccinations/hepatitis-b-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "hepa",
+      "title": "Hepatitis A vaccine",
+      "url": "https://www.nhs.uk/conditions/hepatitis-a/",
+      "baselineSha256": null
+    },
+    {
+      "id": "bcg",
+      "title": "BCG (tuberculosis) vaccine",
+      "url": "https://www.nhs.uk/vaccinations/bcg-vaccine-for-tuberculosis-tb/",
+      "baselineSha256": null
+    },
+    {
+      "id": "sixin1",
+      "title": "6-in-1 vaccine",
+      "url": "https://www.nhs.uk/vaccinations/6-in-1-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "rota",
+      "title": "Rotavirus vaccine",
+      "url": "https://www.nhs.uk/vaccinations/rotavirus-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "mmrv",
+      "title": "MMRV vaccine",
+      "url": "https://www.nhs.uk/vaccinations/mmrv-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "fourin1",
+      "title": "4-in-1 pre-school booster",
+      "url": "https://www.nhs.uk/vaccinations/4-in-1-preschool-booster-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "childflu",
+      "title": "Children's flu vaccine",
+      "url": "https://www.nhs.uk/vaccinations/child-flu-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "tdipv",
+      "title": "Td/IPV teenage booster",
+      "url": "https://www.nhs.uk/vaccinations/td-ipv-vaccine-3-in-1-teenage-booster/",
+      "baselineSha256": null
+    },
+    {
+      "id": "pneumoBaby",
+      "title": "Pneumococcal vaccine (infant)",
+      "url": "https://www.nhs.uk/vaccinations/pneumococcal-vaccine/",
+      "baselineSha256": null
+    },
+    {
+      "id": "menbBaby",
+      "title": "MenB vaccine (infant)",
+      "url": "https://www.nhs.uk/vaccinations/menb-vaccine-for-children/",
+      "baselineSha256": null
+    },
+    {
+      "id": "change-mmrv-catch-up",
+      "title": "UKHSA / NHS England \u00b7 MMRV programme letter",
+      "url": "https://www.gov.uk/government/publications/introduction-of-a-routine-varicella-mmrv-vaccination-programme/introduction-of-a-routine-varicella-mmrv-vaccination-programme-for-children-at-one-year-and-at-18-months",
+      "baselineSha256": null,
+      "paused": true
+    },
+    {
+      "id": "change-covid-autumn-2027",
+      "title": "JCVI \u00b7 COVID-19 vaccination in autumn 2027",
+      "url": "https://www.gov.uk/government/publications/covid-19-vaccination-in-autumn-2027-jcvi-advice/jcvi-statement-on-covid-19-vaccination-in-autumn-2027",
+      "baselineSha256": null,
+      "paused": true
+    },
+    {
+      "id": "change-eighteen-month-appointment",
+      "title": "UKHSA / NHS England \u00b7 Childhood schedule changes",
+      "url": "https://www.gov.uk/government/publications/changes-to-the-routine-childhood-schedule-letter/changes-to-the-routine-childhood-vaccination-schedule-from-1-july-2025-and-1-january-2026-letter",
+      "baselineSha256": null,
+      "paused": true
+    },
+    {
+      "id": "change-shingles-immunosuppression",
+      "title": "UKHSA \u00b7 Shingles programme guidance",
+      "url": "https://www.gov.uk/government/publications/shingles-vaccination-guidance-for-healthcare-professionals/shingles-immunisation-programme-information-for-healthcare-practitioners",
+      "baselineSha256": null,
+      "paused": true
+    }
+  ]
+}
