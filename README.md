@@ -1,57 +1,65 @@
-# Vaccs — vaccination checker
+# Vaccs: vaccination checker
 
-A complete dependency-free vaccination discussion prototype, redesigned from `stephenocall30/vaccs-checker` at `382d350`. Independent mint, forest-green and teal visual identity; no NHS styling or logo. `config.html` is excluded.
+A static, dependency-free prototype. You answer a few questions and get a list of vaccinations to raise with a health professional. England only. Answers stay in the browser tab: no analytics, cookies, storage or external calls.
 
-**Not clinically approved. This build is for private design review, not a public clinical service.**
+**Prototype. Not clinically reviewed and not an NHS service.**
 
-## Programme tracker (hidden at launch)
+## Run and test
 
-The tracker is switched off with `FEATURES.tracker=false` at the top of `dist/app.js`. `changes.js` and its tests stay in the repo. The four tracker documents in `sources.json` carry `"paused": true`, so the source monitor skips them. To re-enable: set the flag to `true`, remove `paused` from those entries, restore the nav and footer links in `index.html`, and review every entry against its source.
+Open `dist/index.html` or serve `dist/` with any static server. There is no build step. Tests need Node 18+:
 
-## Included behaviour
+```sh
+node --test tests/*.test.cjs
+```
 
-- Refreshed v0.3 interface across the landing page, checker, results and information pages; rule engine remains v0.2.0.
-- Searchable programme tracker with audience/status filters, source links, before/after explanations and edit history.
-- Recommendations, confirmed programme starts and introduced changes have distinct labels. Passing a date never automatically promotes a status.
-- Home page and clear independent-prototype status.
-- Country gate; directs people outside England to their relevant health service.
-- Self / another adult / child flows; age, pregnancy, immune status, conditions, work and student questions.
-- Form validation, back navigation, review and change answers, branch pruning and reset.
-- Reason-linked discussion cards with official guidance and rule IDs; no unsupported booking promises.
-- PDF via browser Print / Save as PDF. Printed results retain prototype status, generation date and rules version.
-- Source register, explanation of limitations, privacy information and error-report link.
-- No external assets, analytics, cookies or answer storage. Generic route names only in URLs; answers are in page memory. Refresh or reset clears application memory; browser autofill/tab restoration remains browser-controlled.
+## Files
 
-## Deliberate clinical boundaries
+| Path | Purpose |
+|---|---|
+| `dist/index.html` | Shell, header, footer, CSP meta tag |
+| `dist/app.js` | Pages, question flow, validation, results, print |
+| `dist/rules.js` | Rule logic, content and source references |
+| `dist/changes.js` | Programme tracker data (hidden, see below) |
+| `dist/sources.json` | Register of sources the monitor checks |
+| `dist/styles.css` | Design tokens, components, print styles |
+| `dist/logo.svg`, `dist/favicon.svg` | Brand. Export with fill attributes: the CSP blocks `<style>` |
+| `dist/_headers` | Cloudflare-style security headers. Other hosts ignore it |
+| `scripts/monitor-sources.py` | Detects source and PDF changes. Never edits rules |
+| `.github/workflows/` | Tests, Pages deploy, monthly source review |
 
-Children receive official schedule signposting, not calculated infant dosing or catch-up instructions. Generic catch-up wording was removed from this flow. Work alone does not assert COVID campaign entitlement. The unverified student MenB rule is disabled. Shingles for immunosuppressed adults is a qualified discussion prompt from 18, not a judgement of severity. Seasonal calendar arrays are not used to assert availability. The misleading “already had” whole-course completion control is removed.
+## Programme tracker
 
-These changes do **not** constitute a complete clinical audit. The original adult rules still need source-section mapping, programme/effective-date validation, review of medical exclusions and independent clinical approval. Do not treat links to public NHS pages as evidence of clinical sign-off. Publication as a reliable health tool also needs medical-device applicability assessment, operational ownership, accessibility/browser QA, and legal/privacy review.
+Hidden with `FEATURES.tracker=false` at the top of `dist/app.js`. To re-enable: set the flag to `true`, remove `"paused": true` from the four tracker entries in `sources.json`, restore the nav and footer links in `index.html`, and review every entry against its source.
 
-## Maintaining rules
+## Clinical boundaries
 
-1. Give each active rule a stable ID. Preserve IDs in result explanations.
-2. Record exact source version and section, nation/programme, effective dates, reviewer, approval date, review due date and tests. `metadataForRule()` currently makes missing approval explicit; complete this record during clinical review.
-3. Keep JCVI recommendations separate from implemented programme policy and live availability.
-4. Add a regression test for every correction and relevant age/date boundary.
-5. Have the change independently reviewed; publish a version and changelog. Never auto-approve clinical rules using an LLM or scraper.
+- Children get official schedule signposting, with no calculated dosing or catch-up advice.
+- Work alone does not assert COVID entitlement.
+- The student MenB rule is disabled until someone verifies it.
+- Shingles for immunosuppressed adults is a discussion prompt from 18.
+- Results never promise availability or booking.
 
-### Source monitoring setup
+Before anyone relies on this as a health tool it needs: source-section mapping for the adult rules, effective-date validation, a review of medical exclusions, independent clinical approval, a medical-device assessment, and accessibility, legal and privacy review. Links to NHS pages are not evidence of sign-off.
 
-The private hosted preview does not run GitHub Actions. To enable:
+## Changing rules
 
-1. Copy the source into the intended GitHub repo (preserving its own remote), enable Actions and review workflow permissions. Do not publish `.openai/` from this Site into an unrelated repository.
-2. Run `python scripts/monitor-sources.py`. The initial run creates a report and candidate snapshot; absent baselines and fetch errors are reported.
-3. Read the report and source documents. Then run `python scripts/monitor-sources.py --accept-baseline` and commit `sources-baseline.json` **only after review**. Accepting a content baseline is not clinical approval.
-4. The daily workflow compares normalised source text and directly linked PDF hashes. It opens one issue if attention is required, stores the full report as an artifact and fails visibly. An existing issue is not silently closed by the workflow.
-5. Review differences, update affected rules and tests, and accept a new baseline deliberately. Source reformatting can produce false positives. Newsletters and programme-owner oversight remain necessary; this is not a guaranteed complete change feed.
+1. Keep rule IDs stable. Results cite them.
+2. Record source version and section, effective dates, reviewer and review date for each rule.
+3. Keep JCVI recommendations separate from implemented programmes and live availability.
+4. Add a regression test for every correction and every age or date boundary.
+5. Get an independent review. Never approve a clinical rule from an LLM or scraper output.
 
-## Deployment
+## Source monitoring
 
-Serve `dist/` over HTTPS. The Sites copy is private. The build is indexable: the noindex tag was removed on 27 Oct 2026 ahead of public launch. A CSP `<meta>` tag in `index.html` backs up `_headers` on hosts that ignore it (it cannot set `frame-ancestors`). `_headers` is host-specific: verify actual response headers when moving platforms. No database or environment secrets are needed.
+`source-review.yml` runs on the 1st of each month. It compares source text and linked PDF hashes against `sources-baseline.json` and opens an issue when something changed.
 
-For GitHub Pages, deploy the **contents of `dist/`**, not the project root; use a deployment branch or Pages artifact workflow. Keep tests and monitoring scripts in the source repository. Retain the original project's licence/ownership terms: no new licence is asserted here.
+```sh
+python scripts/monitor-sources.py                    # writes source-review.md and a candidate snapshot
+python scripts/monitor-sources.py --accept-baseline  # run only after you have read the report
+```
 
-## Verification
+Accepting a baseline is not clinical approval. Reformatted pages cause false positives, and the monitor can miss changes, so keep reading the programme newsletters.
 
-Node syntax checks, rule regression tests and tracker filtering/date-boundary tests are included. Browser QA in the build environment was blocked by the browser URL security policy, so visual rendering, keyboard interaction, mobile layout and print preview need human verification before wider use.
+## Deploy
+
+`pages.yml` publishes the contents of `dist/` to GitHub Pages on every push to `main`. GitHub Pages ignores `_headers`, so the CSP meta tag is the only policy there and it cannot set `frame-ancestors`. Check response headers when you change host.
