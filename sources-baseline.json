@@ -1,0 +1,168 @@
+{
+  "schedule": {
+    "id": "schedule",
+    "url": "https://www.nhs.uk/vaccinations/nhs-vaccinations-and-when-to-have-them/",
+    "sha256": "de33fe5da79f2aaa2829fcc9a66fed3560edb1fe939b8afbbbbb64ad2db69e1a",
+    "pdfs": {}
+  },
+  "greenbook": {
+    "id": "greenbook",
+    "url": "https://www.gov.uk/government/collections/immunisation-against-infectious-disease-the-green-book",
+    "sha256": "ef4dfc154b59268de6c3448cbfb7262ba1de7eba84fc7dc860dcfb4defd56d8d",
+    "pdfs": {}
+  },
+  "jcvi": {
+    "id": "jcvi",
+    "url": "https://www.gov.uk/government/collections/jcvi-current-advice-and-recommendations",
+    "sha256": "d08960c1e9e13f63c29ad55d414f5dfef5adf9c563cc7ce741a39bfb19a02a69",
+    "pdfs": {}
+  },
+  "updates": {
+    "id": "updates",
+    "url": "https://www.gov.uk/government/collections/vaccine-update",
+    "sha256": "c0b8c0de3b1dfd03b249f458a69380297f80624d0d8dca29d4bb3b7d63f8b3d4",
+    "pdfs": {}
+  },
+  "flu": {
+    "id": "flu",
+    "url": "https://www.nhs.uk/vaccinations/flu-vaccine/",
+    "sha256": "af9bc3fa7818df7cf4f151e4db8f959cb533738791ef30b90822209b05c5573b",
+    "pdfs": {
+      "https://assets.publishing.service.gov.uk/media/6311db36e90e077b6a2c17fc/UKHSA_12388_flu_easy_read_leaflet_winter_2022.pdf": "c840e3ca2e20372d7ffd8973718c53af12252022fe17504cf220f4f6bcc841b3"
+    }
+  },
+  "pneumo": {
+    "id": "pneumo",
+    "url": "https://www.nhs.uk/vaccinations/pneumococcal-vaccine/",
+    "sha256": "af8b3f803c36b45ae4564668ba89b3348bf9a9c8915f910b8022513935730233",
+    "pdfs": {}
+  },
+  "shingles": {
+    "id": "shingles",
+    "url": "https://www.nhs.uk/vaccinations/shingles-vaccine/",
+    "sha256": "c98beb7203d1a5cab1b6468547df6a5358b0e76242168a3551262b6b2cf657ef",
+    "pdfs": {}
+  },
+  "rsv": {
+    "id": "rsv",
+    "url": "https://www.nhs.uk/vaccinations/rsv-vaccine/",
+    "sha256": "70462ae826851f23681157ab9dd15a89c56b08f3b214e13b19ca9ab05a746aa2",
+    "pdfs": {}
+  },
+  "covid": {
+    "id": "covid",
+    "url": "https://www.nhs.uk/vaccinations/covid-19-vaccine/",
+    "sha256": "8b6cee1aeec8c5a2c8a77a662435eacc941c83ee222c100e61099fa4d4f782c1",
+    "pdfs": {}
+  },
+  "fluPreg": {
+    "id": "fluPreg",
+    "url": "https://www.nhs.uk/pregnancy/keeping-well/flu-jab/",
+    "sha256": "af9bc3fa7818df7cf4f151e4db8f959cb533738791ef30b90822209b05c5573b",
+    "pdfs": {
+      "https://assets.publishing.service.gov.uk/media/6311db36e90e077b6a2c17fc/UKHSA_12388_flu_easy_read_leaflet_winter_2022.pdf": "c840e3ca2e20372d7ffd8973718c53af12252022fe17504cf220f4f6bcc841b3"
+    }
+  },
+  "wcough": {
+    "id": "wcough",
+    "url": "https://www.nhs.uk/pregnancy/keeping-well/whooping-cough-vaccination/",
+    "sha256": "6cd761c6c239aeadf2fd59f3274582dd3420ecb4df54e4f9cc61bdd1f91bc41b",
+    "pdfs": {}
+  },
+  "rsvPreg": {
+    "id": "rsvPreg",
+    "url": "https://www.nhs.uk/vaccinations/rsv-vaccine/",
+    "sha256": "70462ae826851f23681157ab9dd15a89c56b08f3b214e13b19ca9ab05a746aa2",
+    "pdfs": {}
+  },
+  "menacwy": {
+    "id": "menacwy",
+    "url": "https://www.nhs.uk/vaccinations/menacwy-vaccine/",
+    "sha256": "4fe2565b6763875ff79aeb24cb3c4f3e41e7810b9698c0d50838bdcb03e9e5a7",
+    "pdfs": {}
+  },
+  "menb": {
+    "id": "menb",
+    "url": "https://www.nhs.uk/vaccinations/menb-vaccine-for-children/",
+    "sha256": "4d1c363ea13b771044fbde477313bc5ce07fd81860b2b2299d19c1c26a6082c5",
+    "pdfs": {}
+  },
+  "mmr": {
+    "id": "mmr",
+    "url": "https://www.nhs.uk/vaccinations/mmr-vaccine/",
+    "sha256": "2fbf750bb8166e9b3a8691a20f8e09b9abdc9df70b6ea1467eec974f3bc175d0",
+    "pdfs": {}
+  },
+  "hpv": {
+    "id": "hpv",
+    "url": "https://www.nhs.uk/vaccinations/hpv-vaccine/",
+    "sha256": "af2941f3f040872b334b1fdfe479c2cf98bb0932a75d56d9d014a79e54f082fe",
+    "pdfs": {}
+  },
+  "hepb": {
+    "id": "hepb",
+    "url": "https://www.nhs.uk/vaccinations/hepatitis-b-vaccine/",
+    "sha256": "687730a3d95aee69151be37f705dd02c89d19c319a51e6a3f39485c7bc4b5559",
+    "pdfs": {}
+  },
+  "hepa": {
+    "id": "hepa",
+    "url": "https://www.nhs.uk/conditions/hepatitis-a/",
+    "sha256": "544e442369caada025d27820b374a695780cd4ade8c489b40c872a39f1f7db76",
+    "pdfs": {}
+  },
+  "bcg": {
+    "id": "bcg",
+    "url": "https://www.nhs.uk/vaccinations/bcg-vaccine-for-tuberculosis-tb/",
+    "sha256": "113671aaf030178d001f07105ff3cdead5e74ba7d79074299dd2870a0ca8f7da",
+    "pdfs": {}
+  },
+  "sixin1": {
+    "id": "sixin1",
+    "url": "https://www.nhs.uk/vaccinations/6-in-1-vaccine/",
+    "sha256": "9d120f2d3f18d3abba202c50bd31a595889b2a78bed5e85e6206fbef623f9e18",
+    "pdfs": {}
+  },
+  "rota": {
+    "id": "rota",
+    "url": "https://www.nhs.uk/vaccinations/rotavirus-vaccine/",
+    "sha256": "36d051dd34d5decea68a5b4dda907ff69a483b3e587bc57bfd2456337da2f9b8",
+    "pdfs": {}
+  },
+  "mmrv": {
+    "id": "mmrv",
+    "url": "https://www.nhs.uk/vaccinations/mmrv-vaccine/",
+    "sha256": "f4816b203e537e2c167bbc380ca834d2125d42b75bd4d72a55672de13cdc9a1b",
+    "pdfs": {}
+  },
+  "fourin1": {
+    "id": "fourin1",
+    "url": "https://www.nhs.uk/vaccinations/4-in-1-preschool-booster-vaccine/",
+    "sha256": "4fc9c690b9fd724d0f0c88397c1eac28f6f76aeddc10cc160157446712a89183",
+    "pdfs": {}
+  },
+  "childflu": {
+    "id": "childflu",
+    "url": "https://www.nhs.uk/vaccinations/child-flu-vaccine/",
+    "sha256": "db1c3cb0bbf8a8f79d6223b2d51a8f104e98351133c02e579f4d7628a9c03bb0",
+    "pdfs": {}
+  },
+  "tdipv": {
+    "id": "tdipv",
+    "url": "https://www.nhs.uk/vaccinations/td-ipv-vaccine-3-in-1-teenage-booster/",
+    "sha256": "15753d9613f0b448b4d79b01413dc750bd30fca1835ee74b93e31aa53b8ac2df",
+    "pdfs": {}
+  },
+  "pneumoBaby": {
+    "id": "pneumoBaby",
+    "url": "https://www.nhs.uk/vaccinations/pneumococcal-vaccine/",
+    "sha256": "af8b3f803c36b45ae4564668ba89b3348bf9a9c8915f910b8022513935730233",
+    "pdfs": {}
+  },
+  "menbBaby": {
+    "id": "menbBaby",
+    "url": "https://www.nhs.uk/vaccinations/menb-vaccine-for-children/",
+    "sha256": "4d1c363ea13b771044fbde477313bc5ce07fd81860b2b2299d19c1c26a6082c5",
+    "pdfs": {}
+  }
+}
